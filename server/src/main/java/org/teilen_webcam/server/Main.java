@@ -1,6 +1,6 @@
 package org.teilen_webcam.server;
 
-public class ServerMain {
+public class Main {
 
     public static void main(String[] args) {
 
