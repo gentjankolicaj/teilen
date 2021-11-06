@@ -12,6 +12,7 @@ public class ClientGuiFrame extends JFrame {
 	private final UserPanel userPanel;
 	private final InfoPanel infoPanel;
 	private final RoomPanel roomPanel;
+	private final AboutPanel aboutPanel;
 
 
 	/**
@@ -36,6 +37,9 @@ public class ClientGuiFrame extends JFrame {
 
 		roomPanel = new RoomPanel();
 		contentPane.add(roomPanel, BorderLayout.CENTER);
+
+		aboutPanel = new AboutPanel();
+		contentPane.add(aboutPanel, BorderLayout.SOUTH);
 
 		this.setVisible(true);
 		this.setResizable(false);
