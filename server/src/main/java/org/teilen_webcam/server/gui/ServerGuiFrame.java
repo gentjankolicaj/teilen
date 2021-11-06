@@ -35,6 +35,7 @@ public class ServerGuiFrame extends JFrame {
         cmdPanel = new CmdPanel();
         contentPane.add(cmdPanel, BorderLayout.SOUTH);
 
+        this.setVisible(true);
     }
 
 }

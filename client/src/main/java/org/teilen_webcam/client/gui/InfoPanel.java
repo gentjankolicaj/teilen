@@ -1,8 +1,15 @@
 package org.teilen_webcam.client.gui;
 
+import org.apache.commons.lang3.math.NumberUtils;
+import org.teilen_webcam.client.engine.IOEngine;
+import org.teilen_webcam.client.meta.SocketMeta;
+import org.teilen_webcam.client.util.LogUtil;
+
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class InfoPanel extends JPanel {
     private final JPanel cmdPanel;
@@ -10,7 +17,13 @@ public class InfoPanel extends JPanel {
     private final JTextField portTF;
     private final JTextField timeoutTF;
 
-    public InfoPanel() {
+    private final JButton connectBtn;
+    private final JButton disconnectBtn;
+    private final IOEngine ioEngine;
+
+    public InfoPanel(IOEngine ioEngine) {
+        this.ioEngine = ioEngine;
+
         setBorder(new LineBorder(new Color(0, 0, 0)));
         setLayout(new BorderLayout(0, 0));
 
@@ -57,11 +70,10 @@ public class InfoPanel extends JPanel {
         JLabel iconStatusLbl = new JLabel("");
         cmdPanel.add(iconStatusLbl);
 
-
-        JButton connectBtn = new JButton("Connect");
+        connectBtn = new JButton("Connect");
         cmdPanel.add(connectBtn);
 
-        JButton disconnectBtn = new JButton("Disconnect");
+        disconnectBtn = new JButton("Disconnect");
         cmdPanel.add(disconnectBtn);
 
         JPanel softwareInfoPanel = new JPanel();
@@ -138,6 +150,48 @@ public class InfoPanel extends JPanel {
 
         JLabel freeMemLblValue = new JLabel("30kb");
         hardwareInfoPanel.add(freeMemLblValue);
+
+        //Add button listeners
+        addBtnActionListeners();
     }
 
+    public void addBtnActionListeners() {
+        //Perform action on disconnect
+        this.connectBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                int timeout = getTimeout();
+                int port = getPort();
+                String host = getHost();
+
+                ioEngine.connect(new SocketMeta(host, port, timeout));
+                LogUtil.info("Connect button pressed.");
+            }
+        });
+
+        //Perform action on disconnect
+        this.disconnectBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                ioEngine.disconnect();
+                LogUtil.info("Disconnect button pressed.");
+            }
+        });
+
+    }
+
+    private int getTimeout() {
+        String timeoutStr = this.timeoutTF.getText();
+        return NumberUtils.toInt(timeoutStr);
+    }
+
+    private int getPort() {
+        String timeoutStr = this.portTF.getText();
+        return NumberUtils.toInt(timeoutStr);
+    }
+
+    private String getHost() {
+        String hostStr = this.hostTF.getText();
+        return hostStr;
+    }
 }
