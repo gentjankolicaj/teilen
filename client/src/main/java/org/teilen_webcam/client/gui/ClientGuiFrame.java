@@ -9,7 +9,7 @@ import java.awt.*;
 public class ClientGuiFrame extends JFrame {
 
 	private final JPanel contentPane;
-	private final ClientPanel clientPanel;
+	private final UserPanel userPanel;
 	private final InfoPanel infoPanel;
 	private final RoomPanel roomPanel;
 
@@ -22,7 +22,7 @@ public class ClientGuiFrame extends JFrame {
 	public ClientGuiFrame(IOEngine ioEngine) {
 		setTitle("Teilen-client");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 900, 750);
+		setBounds(100, 100, 1000, 800);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		contentPane.setLayout(new BorderLayout(0, 0));
@@ -31,10 +31,8 @@ public class ClientGuiFrame extends JFrame {
 		infoPanel = new InfoPanel(ioEngine);
 		contentPane.add(infoPanel, BorderLayout.NORTH);
 
-		clientPanel = new ClientPanel();
-		contentPane.add(clientPanel, BorderLayout.WEST);
-		JScrollPane clientScrollPane = new JScrollPane();
-		clientPanel.add(clientScrollPane);
+		userPanel = new UserPanel();
+		contentPane.add(userPanel, BorderLayout.WEST);
 
 		roomPanel = new RoomPanel();
 		contentPane.add(roomPanel, BorderLayout.CENTER);

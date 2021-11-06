@@ -24,8 +24,8 @@ public class InfoPanel extends JPanel {
     public InfoPanel(IOEngine ioEngine) {
         this.ioEngine = ioEngine;
 
-        setBorder(new LineBorder(new Color(0, 0, 0)));
-        setLayout(new BorderLayout(0, 0));
+        this.setBorder(new LineBorder(new Color(0, 0, 0)));
+        this.setLayout(new BorderLayout(0, 0));
 
         cmdPanel = new JPanel();
         add(cmdPanel, BorderLayout.NORTH);
