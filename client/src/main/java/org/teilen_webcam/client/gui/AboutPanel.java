@@ -11,7 +11,7 @@ public class AboutPanel extends JPanel {
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         this.developer = new JLabel("Developer : Gentjan Kolicaj");
         this.website = new JLabel("Website : https://github.com/gentjankolicaj");
-        this.other = new JLabel("Icons : https://icons8.com/icon/zXd7HOdmWPxf/user");
+        this.other = new JLabel("Icons : https://icons8.com/icons");
 
         this.add(developer);
         this.add(website);
