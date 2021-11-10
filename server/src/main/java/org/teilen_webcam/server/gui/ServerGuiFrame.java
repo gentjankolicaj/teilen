@@ -3,39 +3,40 @@ package org.teilen_webcam.server.gui;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 public class ServerGuiFrame extends JFrame {
 
     private final JPanel contentPane;
     private final InfoPanel infoPanel;
-    private final JSplitPane clientSplitPane;
-
+    private final ActivityPanel activityPanel;
     private final JPanel cmdPanel;
 
 
     /**
      * Create the frame.
      */
-    public ServerGuiFrame() {
-        setTitle("Teilen-server");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setBounds(100, 100, 900, 750);
-        contentPane = new JPanel();
-        contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
-        setContentPane(contentPane);
-        contentPane.setLayout(new BorderLayout(0, 0));
+    public ServerGuiFrame(List<Runnable> engines, ExecutorService executor) {
+        this.setTitle("Teilen-server");
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.setBounds(100, 100, 900, 750);
 
-        infoPanel = new InfoPanel();
-        contentPane.add(infoPanel, BorderLayout.NORTH);
+        this.contentPane = new JPanel();
+        this.contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+        this.setContentPane(contentPane);
+        this.contentPane.setLayout(new BorderLayout(0, 0));
 
-        clientSplitPane = new JSplitPane();
-        clientSplitPane.setContinuousLayout(true);
-        contentPane.add(clientSplitPane, BorderLayout.CENTER);
+        this.infoPanel = new InfoPanel();
+        this.activityPanel = new ActivityPanel();
+        this.cmdPanel = new CmdPanel(engines, executor);
 
-        cmdPanel = new CmdPanel();
-        contentPane.add(cmdPanel, BorderLayout.SOUTH);
+        this.contentPane.add(infoPanel, BorderLayout.NORTH);
+        this.contentPane.add(activityPanel, BorderLayout.CENTER);
+        this.contentPane.add(cmdPanel, BorderLayout.SOUTH);
 
         this.setVisible(true);
     }
+
 
 }

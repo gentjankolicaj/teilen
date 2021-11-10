@@ -1,10 +1,10 @@
 package org.teilen_webcam.server.engine;
 
 public class QueueEngine implements Runnable {
-    private final RoomEngine roomEngine;
+    private final ActivityEngine activityEngine;
 
-    public QueueEngine(RoomEngine roomEngine) {
-        this.roomEngine = roomEngine;
+    public QueueEngine(ActivityEngine activityEngine) {
+        this.activityEngine = activityEngine;
     }
 
     @Override

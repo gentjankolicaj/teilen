@@ -1,1 +1,0 @@
-package org.teilen_webcam.server.meta;

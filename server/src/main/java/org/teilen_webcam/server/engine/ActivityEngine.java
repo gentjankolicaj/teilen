@@ -1,6 +1,6 @@
 package org.teilen_webcam.server.engine;
 
-public class RoomEngine implements Runnable {
+public class ActivityEngine implements Runnable {
     @Override
     public void run() {
 
