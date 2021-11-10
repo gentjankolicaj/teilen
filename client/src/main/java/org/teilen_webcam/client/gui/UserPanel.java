@@ -27,9 +27,9 @@ public class UserPanel extends JPanel {
 
     private Map<String, ImageIcon> getImageMap() {
         Map<String, ImageIcon> map = new HashMap<>();
-        map.put("Server", new ImageIcon(UserPanel.class.getClassLoader().getResource("icons8-server-40.png")));
-        map.put("John Doe", new ImageIcon(UserPanel.class.getClassLoader().getResource("icons8-user-40.png")));
-        map.put("Room", new ImageIcon(UserPanel.class.getClassLoader().getResource("icons8-chat-40.png")));
+        map.put("Server", new ImageIcon(UserPanel.class.getClassLoader().getResource("icons8-server-red-40.png")));
+        map.put("John Doe", new ImageIcon(UserPanel.class.getClassLoader().getResource("icons8-user-30.png")));
+        map.put("Group", new ImageIcon(UserPanel.class.getClassLoader().getResource("icons8-group-30.png")));
 
         return map;
     }
@@ -42,7 +42,7 @@ public class UserPanel extends JPanel {
             } else if (i % 2 == 0) {
                 array[i] = "John Doe";
             } else {
-                array[i] = "Room";
+                array[i] = "Group";
             }
         }
         return array;
