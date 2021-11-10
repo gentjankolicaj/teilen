@@ -19,14 +19,12 @@ public class ServerMain {
         QueueEngine queueEngine = new QueueEngine(mediaThread);
         IOEngine ioEngine = new IOEngine(queueEngine);
         DiscoveryEngine discoveryEngine = new DiscoveryEngine(ioEngine);
-
         List<Runnable> engines = Arrays.asList(metadataEngine, mediaThread, queueEngine, ioEngine, discoveryEngine);
-
         ExecutorService executor = Executors.newFixedThreadPool(4);
         for (Runnable engine : engines) {
             executor.submit(engine);
         }
 
-        new ServerGuiFrame(engines, executor);
+        new ServerGuiFrame(engines);
     }
 }

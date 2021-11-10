@@ -4,7 +4,6 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 
 public class ServerGuiFrame extends JFrame {
 
@@ -17,7 +16,7 @@ public class ServerGuiFrame extends JFrame {
     /**
      * Create the frame.
      */
-    public ServerGuiFrame(List<Runnable> engines, ExecutorService executor) {
+    public ServerGuiFrame(List<Runnable> engines) {
         this.setTitle("Teilen-server");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setBounds(100, 100, 900, 750);
@@ -29,7 +28,7 @@ public class ServerGuiFrame extends JFrame {
 
         this.infoPanel = new InfoPanel();
         this.activityPanel = new ActivityPanel();
-        this.cmdPanel = new CmdPanel(engines, executor);
+        this.cmdPanel = new CmdPanel(engines);
 
         this.contentPane.add(infoPanel, BorderLayout.NORTH);
         this.contentPane.add(activityPanel, BorderLayout.CENTER);
