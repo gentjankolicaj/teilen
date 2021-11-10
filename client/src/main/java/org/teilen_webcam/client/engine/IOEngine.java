@@ -3,12 +3,15 @@ package org.teilen_webcam.client.engine;
 import org.teilen_webcam.client.meta.SocketMeta;
 import org.teilen_webcam.client.util.LogUtil;
 import org.teilen_webcam.common.packet.AbstractPacket;
+import org.teilen_webcam.common.packet.meta.ClientConnStatePacket;
+import org.teilen_webcam.common.packet.meta.MetaType;
 
+import java.io.IOException;
 import java.net.Socket;
 
 public class IOEngine implements Runnable {
     private final QueueEngine queueEngine;
-    Boolean connected = false;
+    private Boolean connected = false;
     private Socket socket;
     private SocketMeta socketMeta;
 
@@ -17,19 +20,26 @@ public class IOEngine implements Runnable {
     }
 
     public void run() {
-        while (true) {
-            while (connected) {
-                //Read from queue &
-                //Write to socket
-                AbstractPacket out = queueEngine.readPacket();
-                writeToSocket(out);
+        try {
+            LogUtil.info("Trying to connect to server : " + socketMeta);
+            while (true) {
+                while (connected) {
+                    /**
+                     //Read from queue &
+                     //Write to socket
+                     AbstractPacket out = queueEngine.readPacket();
+                     writeToSocket(out);
 
-                //Read from socket
-                //& Write to queue
-                AbstractPacket in = readFromSocket();
-                queueEngine.writePacket(in);
+                     //Read from socket
+                     //& Write to queue
+                     AbstractPacket in = readFromSocket();
+                     queueEngine.writePacket(in);
+                     */
+                }
+                Thread.sleep(5000);
             }
-            tryToConnect();
+        } catch (Exception e) {
+
         }
     }
 
@@ -41,39 +51,36 @@ public class IOEngine implements Runnable {
         return null;
     }
 
-    private void tryToConnect() {
-        try {
-            LogUtil.info("Trying to connect");
-            Thread.sleep(5000);
-        } catch (Exception e) {
-
-        }
-    }
-
 
     //Public methods to be called from info panel buttons
-    public void connect(SocketMeta socketMeta) {
-        if (this.socketMeta != null) {
+    public synchronized void connect(SocketMeta socketMeta) throws IOException {
+        if (this.socketMeta == null) {
+            this.socketMeta = socketMeta;
+        } else {
             synchronized (this.socketMeta) {
                 this.socketMeta = socketMeta;
             }
-        } else {
-            this.socketMeta = socketMeta;
         }
 
         synchronized (this.connected) {
-            this.connected = true;
+            if (this.connected == false) {
+                this.connected = true;
+                this.socket = new Socket(socketMeta.getSocketHost(), socketMeta.getSocketPort());
+                LogUtil.info("Socket connected : " + this.socket);
+                queueEngine.writePacket(new ClientConnStatePacket(MetaType.CLIENT_CONNECTED));
+            }
         }
     }
 
-    public void disconnect() {
+    public synchronized void disconnect() throws IOException {
         synchronized (this.connected) {
-            this.connected = false;
-        }
-        try {
-            this.socket.close();
-        } catch (Exception e) {
+            if (this.connected) {
+                this.connected = false;
+                this.socket.close();
+                this.socket = null;
+                queueEngine.writePacket(new ClientConnStatePacket(MetaType.CLIENT_DISCONNECTED));
 
+            }
         }
     }
 

@@ -35,7 +35,7 @@ public class InfoPanel extends JPanel {
         cmdPanel.add(hostLbl);
 
         hostTF = new JTextField();
-        hostTF.setText("http://localhost");
+        hostTF.setText("localhost");
         cmdPanel.add(hostTF);
         hostTF.setColumns(10);
 
@@ -46,7 +46,7 @@ public class InfoPanel extends JPanel {
         cmdPanel.add(portLbl);
 
         portTF = new JTextField();
-        portTF.setText("8899");
+        portTF.setText("8888");
         cmdPanel.add(portTF);
         portTF.setColumns(10);
 
@@ -164,8 +164,12 @@ public class InfoPanel extends JPanel {
                 int port = getPort();
                 String host = getHost();
 
-                ioEngine.connect(new SocketMeta(host, port, timeout));
                 LogUtil.info("Connect button pressed.");
+                try {
+                    ioEngine.connect(new SocketMeta(host, port, timeout));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         });
 
@@ -173,8 +177,12 @@ public class InfoPanel extends JPanel {
         this.disconnectBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                ioEngine.disconnect();
                 LogUtil.info("Disconnect button pressed.");
+                try {
+                    ioEngine.disconnect();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         });
 
