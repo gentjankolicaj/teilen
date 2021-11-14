@@ -37,5 +37,7 @@ public class ServerGuiFrame extends JFrame {
         this.setVisible(true);
     }
 
-
+    public ActivityPanel getActivityPanel() {
+        return activityPanel;
+    }
 }

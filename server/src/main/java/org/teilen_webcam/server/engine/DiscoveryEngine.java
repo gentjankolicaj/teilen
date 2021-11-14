@@ -1,5 +1,6 @@
 package org.teilen_webcam.server.engine;
 
+import org.teilen_webcam.common.domain.UserSocket;
 import org.teilen_webcam.server.util.LogUtil;
 
 import java.io.IOException;
@@ -11,9 +12,10 @@ import java.net.SocketTimeoutException;
 public class DiscoveryEngine implements Runnable {
     private final IOEngine ioEngine;
     private final int serverSocketPort = 8888;
-    private final int serverSocketTimeout = 3000;
+    private static int counter = 1;
     private Boolean isRunning = false;
     private ServerSocket serverSocket;
+    private final int serverSocketTimeout = 1500;
 
     public DiscoveryEngine(IOEngine ioEngine) {
         this.ioEngine = ioEngine;
@@ -27,6 +29,8 @@ public class DiscoveryEngine implements Runnable {
                 while (isRunning) {
                     try {
                         Socket socket = serverSocket.accept();
+                        this.ioEngine.addUserSocket(new UserSocket(counter, socket));
+                        counter++;
                         LogUtil.info("Socket accepted : " + socket.toString());
 
                     } catch (SocketTimeoutException ste) {
