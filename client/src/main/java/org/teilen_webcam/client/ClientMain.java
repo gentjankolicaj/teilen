@@ -1,8 +1,7 @@
 package org.teilen_webcam.client;
 
+import org.teilen_webcam.client.engine.ActivityEngine;
 import org.teilen_webcam.client.engine.IOEngine;
-import org.teilen_webcam.client.engine.MediaEngine;
-import org.teilen_webcam.client.engine.MetadataEngine;
 import org.teilen_webcam.client.engine.QueueEngine;
 import org.teilen_webcam.client.gui.ClientGuiFrame;
 
@@ -15,18 +14,20 @@ public class ClientMain {
      * Launch the application.
      */
     public static void main(String[] args) {
-        MetadataEngine metadataEngine = new MetadataEngine();
-        MediaEngine mediaEngine = new MediaEngine();
-        QueueEngine queueEngine = new QueueEngine(mediaEngine);
+        ActivityEngine activityEngine = new ActivityEngine();
+        QueueEngine queueEngine = new QueueEngine(activityEngine);
         IOEngine ioEngine = new IOEngine(queueEngine);
 
         ExecutorService executors = Executors.newFixedThreadPool(4);
-        executors.submit(metadataEngine);
-        executors.submit(mediaEngine);
+        executors.submit(activityEngine);
         executors.submit(queueEngine);
         executors.submit(ioEngine);
 
-        new ClientGuiFrame(ioEngine);
+        ClientGuiFrame clientGuiFrame = new ClientGuiFrame(ioEngine);
+
+        activityEngine.setUserPanel(clientGuiFrame.getUserPanel());
+        activityEngine.setRoomPanel(clientGuiFrame.getRoomPanel());
+
     }
 
 }

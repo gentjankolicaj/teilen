@@ -45,5 +45,11 @@ public class ClientGuiFrame extends JFrame {
 		this.setResizable(false);
 	}
 
+	public UserPanel getUserPanel() {
+		return userPanel;
+	}
 
+	public RoomPanel getRoomPanel() {
+		return roomPanel;
+	}
 }

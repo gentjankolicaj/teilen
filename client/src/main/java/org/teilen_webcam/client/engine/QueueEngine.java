@@ -8,12 +8,12 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 public class QueueEngine implements Runnable {
-    private final MediaEngine mediaEngine;
+    private final ActivityEngine activityEngine;
     private final Queue<AbstractPacket> in;
     private final Queue<AbstractPacket> out;
 
-    public QueueEngine(MediaEngine mediaEngine) {
-        this.mediaEngine = mediaEngine;
+    public QueueEngine(ActivityEngine activityEngine) {
+        this.activityEngine = activityEngine;
         this.in = new LinkedList<>();
         this.out = new LinkedList<>();
     }

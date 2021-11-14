@@ -3,10 +3,12 @@ package org.teilen_webcam.client.engine;
 import org.teilen_webcam.client.meta.SocketMeta;
 import org.teilen_webcam.client.util.LogUtil;
 import org.teilen_webcam.common.packet.AbstractPacket;
-import org.teilen_webcam.common.packet.meta.ClientConnStatePacket;
-import org.teilen_webcam.common.packet.meta.MetaType;
+import org.teilen_webcam.common.packet.meta.ConnectionOperation;
+import org.teilen_webcam.common.packet.meta.ConnectionPacket;
 
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 public class IOEngine implements Runnable {
@@ -24,17 +26,47 @@ public class IOEngine implements Runnable {
             LogUtil.info("Trying to connect to server : " + socketMeta);
             while (true) {
                 while (connected) {
-                    /**
-                     //Read from queue &
-                     //Write to socket
-                     AbstractPacket out = queueEngine.readPacket();
-                     writeToSocket(out);
+                    try {
+                        //Read from queue &
+                        //Write to socket
+                        boolean write = false;
+                        try {
+                            AbstractPacket out = queueEngine.readPacket();
+                            ObjectOutputStream objectInputStream = new ObjectOutputStream(socket.getOutputStream());
+                            objectInputStream.writeObject(out);
+                            objectInputStream.flush();
+                            write = true;
+                            LogUtil.info("From queue-socket : " + out);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
 
-                     //Read from socket
-                     //& Write to queue
-                     AbstractPacket in = readFromSocket();
-                     queueEngine.writePacket(in);
-                     */
+                        //Read from socket
+                        //& Write to queue
+                        boolean read = false;
+                        if (write) {
+                            try {
+                                ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
+                                Object packet = objectInputStream.readObject();
+                                if (packet != null) {
+                                    AbstractPacket in = (AbstractPacket) packet;
+                                    queueEngine.writePacket(in);
+                                    read = true;
+                                    LogUtil.info("From socket-queue : " + in);
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+                        if (!write && !read) {
+                            queueEngine.writePacket(new ConnectionPacket(ConnectionOperation.OFF));
+                            disconnect();
+                        }
+
+                    } catch (Exception e) {
+
+                    }
                 }
                 Thread.sleep(5000);
             }
@@ -43,13 +75,6 @@ public class IOEngine implements Runnable {
         }
     }
 
-    private void writeToSocket(AbstractPacket abstractPacket) {
-
-    }
-
-    private AbstractPacket readFromSocket() {
-        return null;
-    }
 
 
     //Public methods to be called from info panel buttons
@@ -64,10 +89,10 @@ public class IOEngine implements Runnable {
 
         synchronized (this.connected) {
             if (this.connected == false) {
-                this.connected = true;
                 this.socket = new Socket(socketMeta.getSocketHost(), socketMeta.getSocketPort());
+                this.connected = true;
                 LogUtil.info("Socket connected : " + this.socket);
-                queueEngine.writePacket(new ClientConnStatePacket(MetaType.CLIENT_CONNECTED));
+                this.queueEngine.writePacket(new ConnectionPacket(ConnectionOperation.ON));
             }
         }
     }
@@ -77,9 +102,9 @@ public class IOEngine implements Runnable {
             if (this.connected) {
                 this.connected = false;
                 this.socket.close();
+                LogUtil.info("Socket disconnected : " + this.socket);
                 this.socket = null;
-                queueEngine.writePacket(new ClientConnStatePacket(MetaType.CLIENT_DISCONNECTED));
-
+                this.queueEngine.writePacket(new ConnectionPacket(ConnectionOperation.ON));
             }
         }
     }

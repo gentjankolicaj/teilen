@@ -8,19 +8,20 @@ import java.util.Map;
 public class UserPanel extends JPanel {
     private final JList<String> userList;
     private final JScrollPane jScrollPane;
-    private final String[] nameList;
+    private final String[] usernameArray;
     private final Map<String, ImageIcon> userMap;
 
 
     public UserPanel() {
         this.setLayout(new BorderLayout());
-        this.nameList = getNameList();
+        this.usernameArray = getUsernameArray();
         this.userMap = getImageMap();
-        this.userList = new JList<>(nameList);
-        userList.setCellRenderer(new ListImageRenderer());
+        this.userList = new JList<>(usernameArray);
+        this.userList.setCellRenderer(new ListImageRenderer());
 
         this.jScrollPane = new JScrollPane(userList, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
                 JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+
         this.add(jScrollPane, BorderLayout.CENTER);
     }
 
@@ -34,7 +35,7 @@ public class UserPanel extends JPanel {
         return map;
     }
 
-    public String[] getNameList() {
+    public String[] getUsernameArray() {
         String[] array = new String[100];
         for (int i = 0; i < 100; i++) {
             if (i == 0) {
@@ -50,7 +51,6 @@ public class UserPanel extends JPanel {
 
     class ListImageRenderer extends DefaultListCellRenderer {
         Font font = new Font("helvitica", Font.BOLD, 13);
-
         @Override
         public Component getListCellRendererComponent(
                 JList list, Object value, int index,
