@@ -1,4 +1,4 @@
-package org.teilen_webcam.client.meta;
+package org.teilen_webcam.client.domain.meta;
 
 
 import lombok.AllArgsConstructor;

@@ -1,8 +1,8 @@
 package org.teilen_webcam.client.gui;
 
 import org.apache.commons.lang3.math.NumberUtils;
+import org.teilen_webcam.client.domain.meta.SocketMeta;
 import org.teilen_webcam.client.engine.IOEngine;
-import org.teilen_webcam.client.meta.SocketMeta;
 import org.teilen_webcam.client.util.LogUtil;
 
 import javax.swing.*;

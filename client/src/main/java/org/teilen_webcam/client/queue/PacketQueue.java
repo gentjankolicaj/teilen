@@ -1,29 +1,20 @@
-package org.teilen_webcam.server.engine;
+package org.teilen_webcam.client.queue;
 
 import org.teilen_webcam.common.packet.AbstractPacket;
 
 import java.util.LinkedList;
 import java.util.Queue;
 
-public class QueueEngine implements Runnable {
-    private final ActivityEngine activityEngine;
+public class PacketQueue {
     private final Queue<AbstractPacket> in;
     private final Queue<AbstractPacket> out;
 
-    public QueueEngine(ActivityEngine activityEngine) {
-        this.activityEngine = activityEngine;
+    public PacketQueue() {
         this.in = new LinkedList<>();
         this.out = new LinkedList<>();
     }
 
 
-    @Override
-    public void run() {
-        while (true) {
-
-        }
-
-    }
 
     public AbstractPacket readPacket() {
         synchronized (out) {
@@ -36,5 +27,6 @@ public class QueueEngine implements Runnable {
             return this.in.add(abstractPacket);
         }
     }
+
 
 }

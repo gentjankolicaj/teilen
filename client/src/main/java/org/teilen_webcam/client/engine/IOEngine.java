@@ -1,6 +1,7 @@
 package org.teilen_webcam.client.engine;
 
-import org.teilen_webcam.client.meta.SocketMeta;
+import org.teilen_webcam.client.domain.meta.SocketMeta;
+import org.teilen_webcam.client.queue.PacketQueue;
 import org.teilen_webcam.client.util.LogUtil;
 import org.teilen_webcam.common.packet.AbstractPacket;
 import org.teilen_webcam.common.packet.meta.ConnectionOperation;
@@ -12,13 +13,13 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 public class IOEngine implements Runnable {
-    private final QueueEngine queueEngine;
+    private final PacketQueue packetQueue;
     private Boolean connected = false;
     private Socket socket;
     private SocketMeta socketMeta;
 
-    public IOEngine(QueueEngine queueEngine) {
-        this.queueEngine = queueEngine;
+    public IOEngine(PacketQueue packetQueue) {
+        this.packetQueue = packetQueue;
     }
 
     public void run() {
@@ -31,7 +32,7 @@ public class IOEngine implements Runnable {
                         //Write to socket
                         boolean write = false;
                         try {
-                            AbstractPacket out = queueEngine.readPacket();
+                            AbstractPacket out = packetQueue.readPacket();
                             ObjectOutputStream objectInputStream = new ObjectOutputStream(socket.getOutputStream());
                             objectInputStream.writeObject(out);
                             objectInputStream.flush();
@@ -50,7 +51,7 @@ public class IOEngine implements Runnable {
                                 Object packet = objectInputStream.readObject();
                                 if (packet != null) {
                                     AbstractPacket in = (AbstractPacket) packet;
-                                    queueEngine.writePacket(in);
+                                    packetQueue.writePacket(in);
                                     read = true;
                                     LogUtil.info("From socket-queue : " + in);
                                 }
@@ -60,7 +61,7 @@ public class IOEngine implements Runnable {
                         }
 
                         if (!write && !read) {
-                            queueEngine.writePacket(new ConnectionPacket(ConnectionOperation.OFF));
+                            packetQueue.writePacket(new ConnectionPacket(ConnectionOperation.OFF));
                             disconnect();
                         }
 
@@ -92,7 +93,7 @@ public class IOEngine implements Runnable {
                 this.socket = new Socket(socketMeta.getSocketHost(), socketMeta.getSocketPort());
                 this.connected = true;
                 LogUtil.info("Socket connected : " + this.socket);
-                this.queueEngine.writePacket(new ConnectionPacket(ConnectionOperation.ON));
+                this.packetQueue.writePacket(new ConnectionPacket(ConnectionOperation.ON));
             }
         }
     }
@@ -104,7 +105,7 @@ public class IOEngine implements Runnable {
                 this.socket.close();
                 LogUtil.info("Socket disconnected : " + this.socket);
                 this.socket = null;
-                this.queueEngine.writePacket(new ConnectionPacket(ConnectionOperation.ON));
+                this.packetQueue.writePacket(new ConnectionPacket(ConnectionOperation.ON));
             }
         }
     }

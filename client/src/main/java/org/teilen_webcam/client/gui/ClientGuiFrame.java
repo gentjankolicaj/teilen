@@ -1,5 +1,6 @@
 package org.teilen_webcam.client.gui;
 
+import org.teilen_webcam.client.engine.ActivityEngine;
 import org.teilen_webcam.client.engine.IOEngine;
 
 import javax.swing.*;
@@ -16,11 +17,10 @@ public class ClientGuiFrame extends JFrame {
 
 
 	/**
-	 * Create the frame.
-	 *
 	 * @param ioEngine
+	 * @param activityEngine
 	 */
-	public ClientGuiFrame(IOEngine ioEngine) {
+	public ClientGuiFrame(IOEngine ioEngine, ActivityEngine activityEngine) {
 		setTitle("Teilen-client");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 1000, 800);
@@ -43,13 +43,9 @@ public class ClientGuiFrame extends JFrame {
 
 		this.setVisible(true);
 		this.setResizable(false);
+
+		//Set panels to be used by activity engine
+		activityEngine.setPanels(userPanel, roomPanel);
 	}
 
-	public UserPanel getUserPanel() {
-		return userPanel;
-	}
-
-	public RoomPanel getRoomPanel() {
-		return roomPanel;
-	}
 }
