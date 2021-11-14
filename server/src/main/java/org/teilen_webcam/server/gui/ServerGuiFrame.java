@@ -1,9 +1,11 @@
 package org.teilen_webcam.server.gui;
 
+import org.teilen_webcam.server.engine.ActivityEngine;
+import org.teilen_webcam.server.engine.DiscoveryEngine;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.util.List;
 
 public class ServerGuiFrame extends JFrame {
 
@@ -13,10 +15,7 @@ public class ServerGuiFrame extends JFrame {
     private final JPanel cmdPanel;
 
 
-    /**
-     * Create the frame.
-     */
-    public ServerGuiFrame(List<Runnable> engines) {
+    public ServerGuiFrame(ActivityEngine activityEngine, DiscoveryEngine discoveryEngine) {
         this.setTitle("Teilen-server");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setBounds(100, 100, 900, 750);
@@ -28,16 +27,15 @@ public class ServerGuiFrame extends JFrame {
 
         this.infoPanel = new InfoPanel();
         this.activityPanel = new ActivityPanel();
-        this.cmdPanel = new CmdPanel(engines);
+        this.cmdPanel = new CmdPanel(discoveryEngine);
 
         this.contentPane.add(infoPanel, BorderLayout.NORTH);
         this.contentPane.add(activityPanel, BorderLayout.CENTER);
         this.contentPane.add(cmdPanel, BorderLayout.SOUTH);
 
         this.setVisible(true);
-    }
 
-    public ActivityPanel getActivityPanel() {
-        return activityPanel;
+        //Set panels to be used by activity engine
+        activityEngine.setActivityPanel(activityPanel);
     }
 }

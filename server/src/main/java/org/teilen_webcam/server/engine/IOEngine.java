@@ -15,10 +15,10 @@ import java.util.List;
 
 public class IOEngine implements Runnable {
     public List<UserSocket> userSockets;
-    public QueueEngine queueEngine;
+    public PacketQueue packetQueue;
 
-    public IOEngine(QueueEngine queueEngine) {
-        this.queueEngine = queueEngine;
+    public IOEngine(PacketQueue packetQueue) {
+        this.packetQueue = packetQueue;
         this.userSockets = Collections.synchronizedList(new ArrayList<>());
     }
 
@@ -34,7 +34,7 @@ public class IOEngine implements Runnable {
                     //Write to socket
                     boolean write = false;
                     try {
-                        AbstractPacket out = queueEngine.readPacket();
+                        AbstractPacket out = PacketQueue.readPacket();
                         ObjectOutputStream objectInputStream = new ObjectOutputStream(socket.getOutputStream());
                         objectInputStream.writeObject(out);
                         objectInputStream.flush();
@@ -53,7 +53,7 @@ public class IOEngine implements Runnable {
                             Object packet = objectInputStream.readObject();
                             if (packet != null) {
                                 AbstractPacket in = (AbstractPacket) packet;
-                                queueEngine.writePacket(in);
+                                PacketQueue.writePacket(in);
                                 read = true;
                                 LogUtil.info("From socket-queue : " + in);
 
@@ -65,7 +65,7 @@ public class IOEngine implements Runnable {
 
                     if (!write && !read) {
                         removeUserSocket(userSocket);
-                        queueEngine.writePacket(new UserPacket(UserOperation.USER_DELETE));
+                        PacketQueue.writePacket(new UserPacket(UserOperation.USER_DELETE));
                     }
                 }
                 //Todo : solve dead-lock on socketList

@@ -7,16 +7,15 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.List;
 
 public class CmdPanel extends JPanel {
     private final JButton closeGuiBtn;
     private final JButton shutdownBtn;
     private final JButton startBtn;
-    private final List<Runnable> engines;
+    private final DiscoveryEngine discoveryEngine;
 
-    public CmdPanel(List<Runnable> engines) {
-        this.engines = engines;
+    public CmdPanel(DiscoveryEngine discoveryEngine) {
+        this.discoveryEngine = discoveryEngine;
 
         this.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
         this.startBtn = new JButton("Start");
@@ -36,14 +35,11 @@ public class CmdPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 //Start start socket server
-                for (Runnable engine : engines) {
-                    if (engine != null && engine instanceof DiscoveryEngine) {
-                        DiscoveryEngine discoveryEngine = (DiscoveryEngine) engine;
-                        try {
-                            discoveryEngine.startSocketServer();
-                        } catch (Exception e) {
-                            LogUtil.error(e.getMessage());
-                        }
+                if (discoveryEngine != null) {
+                    try {
+                        discoveryEngine.startSocketServer();
+                    } catch (Exception e) {
+                        LogUtil.error(e.getMessage());
                     }
                 }
             }
@@ -53,14 +49,11 @@ public class CmdPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 //Start start socket server
-                for (Runnable engine : engines) {
-                    if (engine != null && engine instanceof DiscoveryEngine) {
-                        DiscoveryEngine discoveryEngine = (DiscoveryEngine) engine;
-                        try {
-                            discoveryEngine.shutdownSocketServer();
-                        } catch (Exception e) {
-                            LogUtil.error(e.getMessage());
-                        }
+                if (discoveryEngine != null) {
+                    try {
+                        discoveryEngine.shutdownSocketServer();
+                    } catch (Exception e) {
+                        LogUtil.error(e.getMessage());
                     }
                 }
             }
