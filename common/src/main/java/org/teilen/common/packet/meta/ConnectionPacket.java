@@ -9,6 +9,6 @@ import java.io.Serializable;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ConnectionPacket extends MetadataPacket implements Serializable {
+public class ConnectionPacket extends MetaPacket implements Serializable {
     public ConnectionOperation connectionOperation;
 }

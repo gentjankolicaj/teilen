@@ -10,7 +10,7 @@ import java.io.Serializable;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserPacket extends MetadataPacket implements Serializable {
+public class UserPacket extends MetaPacket implements Serializable {
     public UserOperation userOperation;
 
 }

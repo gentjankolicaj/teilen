@@ -9,7 +9,7 @@ import java.io.Serializable;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class RoomPacket extends MetadataPacket implements Serializable {
+public class RoomPacket extends MetaPacket implements Serializable {
     public RoomOperation roomOperation;
 
 }
