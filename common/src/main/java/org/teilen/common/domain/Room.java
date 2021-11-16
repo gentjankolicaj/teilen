@@ -24,6 +24,12 @@ public class Room {
         this.ownerId = ownerId;
     }
 
+    public Room(Integer id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
+
     public Room(Integer id, User firstUser, User secondUser) {
         this.id = id;
         if (users == null) {
@@ -36,6 +42,32 @@ public class Room {
     public void addUser(User newUser) {
         if (users == null) {
             users = new ArrayList<>();
+            users.add(newUser);
+        } else if (users.size() == 0) {
+            users.add(newUser);
+        } else {
+            boolean found = false;
+            for (int i = 0; i < users.size(); i++) {
+                User tmp = users.get(i);
+                Integer tmpUserId = tmp.getId();
+                Integer userId = newUser.getId();
+                if ((tmpUserId != null && userId != null) && (tmpUserId.intValue() == userId.intValue())) {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) {
+                users.add(newUser);
+            }
+        }
+    }
+
+    public void updateUser(User newUser) {
+        if (users == null) {
+            users = new ArrayList<>();
+            users.add(newUser);
+        } else if (users.size() == 0) {
             users.add(newUser);
         } else {
             for (int i = 0; i < users.size(); i++) {
@@ -52,7 +84,7 @@ public class Room {
     }
 
     public void removeUser(User newUser) {
-        if (users != null) {
+        if (users != null && users.size() != 0) {
             for (int i = 0; i < users.size(); i++) {
                 User tmp = users.get(i);
                 Integer tmpUserId = tmp.getId();
@@ -74,7 +106,7 @@ public class Room {
     }
 
     public void removePacket(Packet newPacket) {
-        if (packets != null) {
+        if (packets != null && packets.size() != 0) {
             for (int i = 0; i < packets.size(); i++) {
                 Packet tmp = packets.get(i);
                 Integer tmpPacketId = tmp.getId();
@@ -89,7 +121,12 @@ public class Room {
 
 
     public void updatePacket(Packet newPacket) {
-        if (packets != null) {
+        if (packets == null) {
+            packets = new ArrayList<>();
+            packets.add(newPacket);
+        } else if (packets.size() == 0) {
+            packets.add(newPacket);
+        } else {
             for (int i = 0; i < packets.size(); i++) {
                 Packet tmp = packets.get(i);
                 Integer tmpPacketId = tmp.getId();

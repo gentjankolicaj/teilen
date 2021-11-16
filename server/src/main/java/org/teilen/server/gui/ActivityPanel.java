@@ -4,67 +4,56 @@ import org.teilen.common.domain.Room;
 import org.teilen.common.domain.User;
 
 import javax.swing.*;
-import java.awt.*;
-import java.util.ArrayList;
-import java.util.List;
 
 
 public class ActivityPanel extends JSplitPane {
-    private final JList<String> userList;
-    private final List<User> users;
-    private final DefaultListModel<String> userModelList;
     private final JScrollPane userScrollPane;
-    private final ImageIcon userImageIcon = new ImageIcon(ActivityPanel.class.getClassLoader().getResource("icons8-user-30.png"));
+    private final UserPanel userPanel;
 
+    private final JScrollPane roomScrollPane;
+    private final RoomPanel roomPanel;
 
     public ActivityPanel() {
         this.setContinuousLayout(true);
         this.setOrientation(SwingConstants.VERTICAL);
 
-        this.users = new ArrayList<>();
-        this.userModelList = new DefaultListModel<>();
-        this.userList = new JList<>(userModelList);
-        this.userList.setCellRenderer(new UserIconRenderer());
-        this.userScrollPane = new JScrollPane(userList, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+        this.userPanel = new UserPanel();
+        this.userScrollPane = new JScrollPane(userPanel, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
                 JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 
 
+        this.roomPanel = new RoomPanel();
+        this.roomScrollPane = new JScrollPane(roomPanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+
+
         this.setLeftComponent(userScrollPane);
+        this.setRightComponent(roomScrollPane);
     }
 
+
+    //Add room & validate scroll
     public void addRoom(Room room) {
+        roomPanel.addRoom(room);
+        roomScrollPane.validate();
     }
 
+    //remove room & validate scroll
+    public void removeRoom(Room room) {
+        roomPanel.removeRoom(room);
+        roomScrollPane.validate();
+    }
+
+    //Add user & validate scroll
     public void addUser(User user) {
-        this.users.add(user);
-        String username = null;
-        if (user != null) {
-            username = user.getFirstname() + " " + user.getLastname();
-        } else
-            username = "";
-        this.userModelList.addElement(username);
+        userPanel.addUser(user);
+        userScrollPane.validate();
     }
 
-
-    class UserIconRenderer extends DefaultListCellRenderer {
-        Font font = new Font("helvitica", Font.BOLD, 13);
-
-        @Override
-        public Component getListCellRendererComponent(
-                JList list, Object value, int index,
-                boolean isSelected, boolean cellHasFocus) {
-
-            JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-            String username = label.getText();
-            username = "" + username + " ";
-            label.setText(username);
-            label.setIcon(userImageIcon);
-            label.setHorizontalTextPosition(JLabel.RIGHT);
-            label.setFont(font);
-            return label;
-        }
+    //remove user & validate scroll
+    public void removeUser(User user) {
+        userPanel.removeUser(user);
+        userScrollPane.validate();
     }
-
-
 }
 
