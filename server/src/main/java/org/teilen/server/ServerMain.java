@@ -3,8 +3,8 @@ package org.teilen.server;
 import org.teilen.server.engine.ActivityEngine;
 import org.teilen.server.engine.DiscoveryEngine;
 import org.teilen.server.engine.IOEngine;
-import org.teilen.server.engine.PacketQueue;
 import org.teilen.server.gui.ServerGuiFrame;
+import org.teilen.server.queue.PacketQueue;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

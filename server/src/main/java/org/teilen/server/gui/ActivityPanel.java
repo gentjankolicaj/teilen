@@ -2,8 +2,15 @@ package org.teilen.server.gui;
 
 import org.teilen.common.domain.Room;
 import org.teilen.common.domain.User;
+import org.teilen.common.packet.Packet;
+import org.teilen.common.packet.meta.RoomPacket;
+import org.teilen.common.packet.meta.UserOp;
+import org.teilen.common.packet.meta.UserPacket;
+import org.teilen.server.util.LogUtil;
 
 import javax.swing.*;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class ActivityPanel extends JSplitPane {
@@ -33,27 +40,83 @@ public class ActivityPanel extends JSplitPane {
 
 
     //Add room & validate scroll
-    public void addRoom(Room room) {
+    private void addRoom(Room room) {
         roomPanel.addRoom(room);
         roomScrollPane.validate();
     }
 
     //remove room & validate scroll
-    public void removeRoom(Room room) {
+    private void removeRoom(Room room) {
         roomPanel.removeRoom(room);
         roomScrollPane.validate();
     }
 
     //Add user & validate scroll
-    public void addUser(User user) {
+    private void addUser(User user) {
         userPanel.addUser(user);
         userScrollPane.validate();
     }
 
     //remove user & validate scroll
-    public void removeUser(User user) {
+    private void removeUser(User user) {
         userPanel.removeUser(user);
         userScrollPane.validate();
     }
+
+    public void updateMeta(List<Packet> metas) {
+        List<Packet> userMeta = getUserMeta(metas);
+        List<Packet> roomMeta = getRoomMeta(metas);
+        updateUserMeta(userMeta);
+        updateRoomMeta(roomMeta);
+
+    }
+
+    private void updateRoomMeta(List<Packet> roomMeta) {
+    }
+
+    private void updateUserMeta(List<Packet> userMeta) {
+        if (userMeta != null) {
+            for (Packet packet : userMeta) {
+                UserPacket userPacket = (UserPacket) packet;
+                if (userPacket.userOp.name().equals(UserOp.USER_CREATE.name())) {
+                    userPanel.addUser(new User(userPacket.id, "Jame", "Doe"));
+                } else if (userPacket.userOp.name().equals(UserOp.USER_DELETE.name())) {
+                    userPanel.removeUser(new User(userPacket.id, "Jame", "Doe"));
+                }
+            }
+            userScrollPane.validate();
+            LogUtil.info("User panel updated.");
+        }
+    }
+
+    private List<Packet> getUserMeta(List<Packet> metas) {
+        if (metas == null || metas.size() == 0)
+            return null;
+        else {
+            List<Packet> userMetas = new ArrayList<>();
+            for (Packet packet : metas) {
+                if (packet instanceof UserPacket) {
+                    userMetas.add(packet);
+                }
+            }
+            return userMetas;
+        }
+    }
+
+    private List<Packet> getRoomMeta(List<Packet> metas) {
+        if (metas == null || metas.size() == 0)
+            return null;
+        else {
+            List<Packet> roomMetas = new ArrayList<>();
+            for (Packet packet : metas) {
+                if (packet instanceof RoomPacket) {
+                    roomMetas.add(packet);
+                }
+            }
+            return roomMetas;
+        }
+    }
+
+
 }
 

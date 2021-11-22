@@ -11,6 +11,8 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserPacket extends MetaPacket implements Serializable {
-    public UserOperation userOperation;
+    public UserOp userOp;
+    public Integer id;
+
 
 }

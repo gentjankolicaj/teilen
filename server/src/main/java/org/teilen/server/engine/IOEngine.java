@@ -1,9 +1,10 @@
 package org.teilen.server.engine;
 
 import org.teilen.common.packet.Packet;
-import org.teilen.common.packet.meta.UserOperation;
+import org.teilen.common.packet.meta.UserOp;
 import org.teilen.common.packet.meta.UserPacket;
 import org.teilen.server.domain.UserSocket;
+import org.teilen.server.queue.PacketQueue;
 import org.teilen.server.util.LogUtil;
 
 import java.io.ObjectInputStream;
@@ -65,7 +66,6 @@ public class IOEngine implements Runnable {
 
                     if (!write && !read) {
                         removeUserSocket(userSocket);
-                        PacketQueue.writePacket(new UserPacket(UserOperation.USER_DELETE));
                     }
                 }
                 //Todo : solve dead-lock on socketList
@@ -83,12 +83,14 @@ public class IOEngine implements Runnable {
             } catch (Exception e) {
             }
             this.userSockets.remove(userSocket);
+            PacketQueue.writePacket(new UserPacket(UserOp.USER_DELETE, userSocket.getId()));
         }
     }
 
     public void addUserSocket(UserSocket userSocket) {
         synchronized (this.userSockets) {
             this.userSockets.add(userSocket);
+            PacketQueue.writePacket(new UserPacket(UserOp.USER_CREATE, userSocket.getId()));
         }
     }
 

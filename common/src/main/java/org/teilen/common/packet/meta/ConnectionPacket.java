@@ -10,5 +10,5 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ConnectionPacket extends MetaPacket implements Serializable {
-    public ConnectionOperation connectionOperation;
+    public ConnectionOp connectionOp;
 }

@@ -10,6 +10,6 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RoomPacket extends MetaPacket implements Serializable {
-    public RoomOperation roomOperation;
+    public RoomOp roomOp;
 
 }

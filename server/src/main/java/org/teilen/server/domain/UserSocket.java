@@ -7,8 +7,8 @@ import lombok.NoArgsConstructor;
 import java.net.Socket;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 public class UserSocket {
     private Integer id;
     private Socket socket;
