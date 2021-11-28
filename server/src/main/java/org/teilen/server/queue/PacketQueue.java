@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Queue;
 
 public class PacketQueue {
-
     private static final Queue<Packet> in = new LinkedList<>();
     private static final Queue<Packet> out = new LinkedList<>();
 

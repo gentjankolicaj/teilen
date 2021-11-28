@@ -16,10 +16,8 @@ import java.util.List;
 
 public class IOEngine implements Runnable {
     public List<UserSocket> userSockets;
-    public PacketQueue packetQueue;
 
-    public IOEngine(PacketQueue packetQueue) {
-        this.packetQueue = packetQueue;
+    public IOEngine() {
         this.userSockets = Collections.synchronizedList(new ArrayList<>());
     }
 

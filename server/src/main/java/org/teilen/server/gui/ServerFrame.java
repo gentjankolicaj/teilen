@@ -7,7 +7,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
-public class ServerGuiFrame extends JFrame {
+public class ServerFrame extends JFrame {
 
     private final JPanel contentPane;
     private final InfoPanel infoPanel;
@@ -15,7 +15,7 @@ public class ServerGuiFrame extends JFrame {
     private final JPanel cmdPanel;
 
 
-    public ServerGuiFrame(ActivityEngine activityEngine, DiscoveryEngine discoveryEngine) {
+    public ServerFrame(ActivityEngine activityEngine, DiscoveryEngine discoveryEngine) {
         this.setTitle("Teilen-server");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setBounds(100, 100, 900, 750);

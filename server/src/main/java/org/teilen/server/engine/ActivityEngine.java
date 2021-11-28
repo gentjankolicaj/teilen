@@ -10,9 +10,8 @@ import java.util.List;
 
 public class ActivityEngine implements Runnable {
     private ActivityPanel activityPanel;
-    private static int counter;
     private static final int threadSleep = 2000; //millis
-    private static final int packerNumber = 5;
+    private static final int packetNumber = 5;
 
     @Override
     public void run() {
@@ -20,7 +19,7 @@ public class ActivityEngine implements Runnable {
             try {
                 if (activityPanel != null) {
                     Thread.sleep(threadSleep);
-                    List<Packet> packets = PacketQueue.readPackets(5);
+                    List<Packet> packets = PacketQueue.readPackets(packetNumber);
                     if (packets != null) {
                         List<Packet> metas = new ArrayList<>();
                         List<Packet> medias = new ArrayList<>();
