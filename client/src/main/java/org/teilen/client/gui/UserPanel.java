@@ -1,55 +1,87 @@
 package org.teilen.client.gui;
 
+import org.teilen.common.domain.User;
+
 import javax.swing.*;
 import java.awt.*;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
-public class UserPanel extends JPanel {
-    private final JList<String> userList;
-    private final JScrollPane jScrollPane;
-    private final String[] userArray;
-    private final Map<String, ImageIcon> userMap;
-
+public class UserPanel extends JList<String> {
+    static DefaultListModel<String> userModelList = new DefaultListModel<>();
+    static List<User> users = new ArrayList<>();
+    private final ImageIcon userImageIcon = getUserImageIcon();
 
     public UserPanel() {
-        this.setLayout(new BorderLayout());
-        this.userArray = getUserArray();
-        this.userMap = getImageMap();
-        this.userList = new JList<>(userArray);
-        this.userList.setCellRenderer(new ListIconRenderer());
-
-        this.jScrollPane = new JScrollPane(userList, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-                JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-
-        this.add(jScrollPane, BorderLayout.CENTER);
+        super(userModelList);
+        this.setCellRenderer(new UserIconRenderer());
     }
 
-
-    private Map<String, ImageIcon> getImageMap() {
-        Map<String, ImageIcon> map = new HashMap<>();
-        map.put("Server", new ImageIcon(UserPanel.class.getClassLoader().getResource("icons8-server-red-40.png")));
-        map.put("John Doe", new ImageIcon(UserPanel.class.getClassLoader().getResource("icons8-user-30.png")));
-        map.put("Group", new ImageIcon(UserPanel.class.getClassLoader().getResource("icons8-group-30.png")));
-
-        return map;
+    public static ImageIcon getUserImageIcon() {
+        return new ImageIcon(ActivityPanel.class.getClassLoader().getResource("icons8-user-30.png"));
     }
 
-    public String[] getUserArray() {
-        String[] array = new String[100];
-        for (int i = 0; i < 100; i++) {
-            if (i == 0) {
-                array[i] = "Server";
-            } else if (i % 2 == 0) {
-                array[i] = "John Doe";
-            } else {
-                array[i] = "Group";
+    private static ImageIcon getRoomImageIcon() {
+        return new ImageIcon(ActivityPanel.class.getClassLoader().getResource("icons8-group-30.png"));
+    }
+
+    public void addUser(User user) {
+        if (users != null) {
+            boolean found = false;
+            for (int i = 0; i < users.size(); i++) {
+                User tmp = users.get(i);
+                Integer tmpUserId = tmp.getId();
+                Integer userId = user.getId();
+                if ((tmpUserId != null && userId != null) && (tmpUserId.intValue() == userId.intValue())) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                int addIndex = users.size(); //because is total number and index start from 0
+                users.add(user);
+                String username = getUsername(user);
+                userModelList.add(addIndex, username);
+
+                /** todo in future
+                 userModelList.add(addIndex,new UserModel(user.getId(),username));
+                 */
             }
         }
-        return array;
+
     }
 
-    class ListIconRenderer extends DefaultListCellRenderer {
+    private String getUsername(User user) {
+        String username = null;
+        if (user != null) {
+            username = user.getFirstname() + " " + user.getLastname() + ":" + user.getId();
+        } else
+            username = "";
+        return username;
+    }
+
+    public void removeUser(User user) {
+        if (users != null && users.size() != 0) {
+            boolean found = false;
+            int removeIndex = -1;
+            for (int i = 0; i < users.size(); i++) {
+                User tmp = users.get(i);
+                Integer tmpUserId = tmp.getId();
+                Integer userId = user.getId();
+                if ((tmpUserId != null && userId != null) && (tmpUserId.intValue() == userId.intValue())) {
+                    found = true;
+                    removeIndex = i;
+                    break;
+                }
+            }
+            if (found) {
+                users.remove(removeIndex);
+                userModelList.remove(removeIndex);
+            }
+        }
+    }
+
+    class UserIconRenderer extends DefaultListCellRenderer {
         Font font = new Font("helvitica", Font.BOLD, 13);
 
         @Override
@@ -59,14 +91,23 @@ public class UserPanel extends JPanel {
 
             JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             String username = label.getText();
-            username = "" + username + "     ";
+            username = "" + username + " ";
             label.setText(username);
-            label.setIcon(userMap.get((String) value));
+            label.setIcon(userImageIcon);
             label.setHorizontalTextPosition(JLabel.RIGHT);
             label.setFont(font);
             return label;
         }
     }
-
-
 }
+
+class UserModel {
+    Integer userId;
+    String username;
+
+    public UserModel(Integer userId, String username) {
+        this.userId = userId;
+        this.username = username;
+    }
+}
+

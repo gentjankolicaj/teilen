@@ -12,21 +12,29 @@ public class RoomPanel extends JPanel {
     BodyPanel bodyPanel;
     FooterPanel footerPanel;
     BorderLayout borderLayout;
+    JLabel noChatLbl;
 
 
     public RoomPanel() {
         this.borderLayout = new BorderLayout(0, 0);
+        this.setLayout(borderLayout);
+
+        this.noChatLbl = new JLabel("    No chat window opened , click an available user and start chatting...");
+        this.add(noChatLbl, BorderLayout.CENTER);
+    }
+
+    public RoomPanel(String username) {
+        this.borderLayout = new BorderLayout(0, 0);
         this.setBorder(new LineBorder(new Color(0, 0, 0)));
         this.setLayout(borderLayout);
 
-        this.headerPanel = new HeaderPanel("John Doe");
+        this.headerPanel = new HeaderPanel(username);
         this.bodyPanel = new BodyPanel();
         this.footerPanel = new FooterPanel();
 
         this.add(headerPanel, BorderLayout.NORTH);
         this.add(bodyPanel, BorderLayout.CENTER);
         this.add(footerPanel, BorderLayout.SOUTH);
-
     }
 
     //To be called when on room or client is clicked
@@ -97,10 +105,10 @@ class HeaderPanel extends JPanel {
 
     private Map<String, ImageIcon> getIconMap() {
         Map<String, ImageIcon> map = new HashMap<>();
-        map.put("User", new ImageIcon(UserPanel.class.getClassLoader().getResource("icons8-user-30.png")));
-        map.put("AddUser", new ImageIcon(UserPanel.class.getClassLoader().getResource("icons8-add-user-30.png")));
-        map.put("Camera", new ImageIcon(UserPanel.class.getClassLoader().getResource("icons8-video-camera-30.png")));
-        map.put("Phone", new ImageIcon(UserPanel.class.getClassLoader().getResource("icons8-phone-30.png")));
+        map.put("User", new ImageIcon(ConnPanel.class.getClassLoader().getResource("icons8-user-30.png")));
+        map.put("AddUser", new ImageIcon(ConnPanel.class.getClassLoader().getResource("icons8-add-user-30.png")));
+        map.put("Camera", new ImageIcon(ConnPanel.class.getClassLoader().getResource("icons8-video-camera-30.png")));
+        map.put("Phone", new ImageIcon(ConnPanel.class.getClassLoader().getResource("icons8-phone-30.png")));
         return map;
     }
 
@@ -163,8 +171,8 @@ class FooterPanel extends JPanel {
 
     private Map<String, ImageIcon> getIconMap() {
         Map<String, ImageIcon> map = new HashMap<>();
-        map.put("AddFile", new ImageIcon(UserPanel.class.getClassLoader().getResource("icons8-add-file-20.png")));
-        map.put("Record", new ImageIcon(UserPanel.class.getClassLoader().getResource("icons8-add-record-20.png")));
+        map.put("AddFile", new ImageIcon(ConnPanel.class.getClassLoader().getResource("icons8-add-file-20.png")));
+        map.put("Record", new ImageIcon(ConnPanel.class.getClassLoader().getResource("icons8-add-record-20.png")));
         return map;
     }
 

@@ -7,12 +7,10 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
-public class ClientGuiFrame extends JFrame {
-
+public class ClientFrame extends JFrame {
 	private final JPanel contentPane;
-	private final UserPanel userPanel;
 	private final InfoPanel infoPanel;
-	private final RoomPanel roomPanel;
+	private final ActivityPanel activityPanel;
 	private final AboutPanel aboutPanel;
 
 
@@ -20,10 +18,10 @@ public class ClientGuiFrame extends JFrame {
 	 * @param ioEngine
 	 * @param activityEngine
 	 */
-	public ClientGuiFrame(IOEngine ioEngine, ActivityEngine activityEngine) {
-		setTitle("Teilen-client");
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 1000, 800);
+	public ClientFrame(IOEngine ioEngine, ActivityEngine activityEngine) {
+		this.setTitle("Teilen-CLIENT");
+		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		this.setBounds(100, 100, 900, 700);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		contentPane.setLayout(new BorderLayout(0, 0));
@@ -32,20 +30,17 @@ public class ClientGuiFrame extends JFrame {
 		infoPanel = new InfoPanel(ioEngine);
 		contentPane.add(infoPanel, BorderLayout.NORTH);
 
-		userPanel = new UserPanel();
-		contentPane.add(userPanel, BorderLayout.WEST);
-
-		roomPanel = new RoomPanel();
-		contentPane.add(roomPanel, BorderLayout.CENTER);
+		activityPanel = new ActivityPanel();
+		contentPane.add(activityPanel, BorderLayout.CENTER);
 
 		aboutPanel = new AboutPanel();
 		contentPane.add(aboutPanel, BorderLayout.SOUTH);
 
 		this.setVisible(true);
-		this.setResizable(false);
+		this.setResizable(true);
 
 		//Set panels to be used by activity engine
-		activityEngine.setPanels(userPanel, roomPanel);
+		activityEngine.setActivityPanel(activityPanel);
 	}
 
 }

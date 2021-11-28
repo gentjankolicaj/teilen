@@ -1,5 +1,5 @@
 package org.teilen.common.packet.meta;
 
-public enum ConnectionOp {
+public enum ConnOp {
     ON, OFF
 }

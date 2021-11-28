@@ -4,8 +4,8 @@ import org.teilen.client.domain.SocketMeta;
 import org.teilen.client.queue.PacketQueue;
 import org.teilen.client.util.LogUtil;
 import org.teilen.common.packet.Packet;
-import org.teilen.common.packet.meta.ConnectionOperation;
-import org.teilen.common.packet.meta.ConnectionPacket;
+import org.teilen.common.packet.meta.ConnOp;
+import org.teilen.common.packet.meta.ConnPacket;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -13,13 +13,11 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 public class IOEngine implements Runnable {
-    private final PacketQueue packetQueue;
     private Boolean connected = false;
     private Socket socket;
     private SocketMeta socketMeta;
 
-    public IOEngine(PacketQueue packetQueue) {
-        this.packetQueue = packetQueue;
+    public IOEngine() {
     }
 
     public void run() {
@@ -32,7 +30,7 @@ public class IOEngine implements Runnable {
                         //Write to socket
                         boolean write = false;
                         try {
-                            Packet out = packetQueue.readPacket();
+                            Packet out = PacketQueue.readPacket();
                             ObjectOutputStream objectInputStream = new ObjectOutputStream(socket.getOutputStream());
                             objectInputStream.writeObject(out);
                             objectInputStream.flush();
@@ -51,7 +49,7 @@ public class IOEngine implements Runnable {
                                 Object packet = objectInputStream.readObject();
                                 if (packet != null) {
                                     Packet in = (Packet) packet;
-                                    packetQueue.writePacket(in);
+                                    PacketQueue.writePacket(in);
                                     read = true;
                                     LogUtil.info("From socket-queue : " + in);
                                 }
@@ -61,7 +59,6 @@ public class IOEngine implements Runnable {
                         }
 
                         if (!write && !read) {
-                            packetQueue.writePacket(new ConnectionPacket(ConnectionOperation.OFF));
                             disconnect();
                         }
 
@@ -93,7 +90,7 @@ public class IOEngine implements Runnable {
                 this.socket = new Socket(socketMeta.getSocketHost(), socketMeta.getSocketPort());
                 this.connected = true;
                 LogUtil.info("Socket connected : " + this.socket);
-                this.packetQueue.writePacket(new ConnectionPacket(ConnectionOperation.ON));
+                PacketQueue.writePacket(new ConnPacket(ConnOp.ON));
             }
         }
     }
@@ -105,7 +102,7 @@ public class IOEngine implements Runnable {
                 this.socket.close();
                 LogUtil.info("Socket disconnected : " + this.socket);
                 this.socket = null;
-                this.packetQueue.writePacket(new ConnectionPacket(ConnectionOperation.ON));
+                PacketQueue.writePacket(new ConnPacket(ConnOp.OFF));
             }
         }
     }

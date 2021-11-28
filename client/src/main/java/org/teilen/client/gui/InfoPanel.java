@@ -13,6 +13,9 @@ import java.awt.event.ActionListener;
 
 public class InfoPanel extends JPanel {
     private final JPanel cmdPanel;
+    private final JPanel softwareInfoPanel;
+    private final JPanel hardwareInfoPanel;
+
     private final JTextField hostTF;
     private final JTextField portTF;
     private final JTextField timeoutTF;
@@ -76,8 +79,7 @@ public class InfoPanel extends JPanel {
         disconnectBtn = new JButton("Disconnect");
         cmdPanel.add(disconnectBtn);
 
-        JPanel softwareInfoPanel = new JPanel();
-        softwareInfoPanel.setBorder(new LineBorder(new Color(0, 0, 0)));
+        softwareInfoPanel = new JPanel();
         add(softwareInfoPanel, BorderLayout.CENTER);
         softwareInfoPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 
@@ -114,7 +116,7 @@ public class InfoPanel extends JPanel {
         JLabel userDirLblValue = new JLabel("/home/user");
         softwareInfoPanel.add(userDirLblValue);
 
-        JPanel hardwareInfoPanel = new JPanel();
+        hardwareInfoPanel = new JPanel();
         add(hardwareInfoPanel, BorderLayout.SOUTH);
         hardwareInfoPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 
