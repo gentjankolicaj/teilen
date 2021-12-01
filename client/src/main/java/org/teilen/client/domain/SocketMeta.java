@@ -13,6 +13,7 @@ public class SocketMeta {
     private String socketHost;
     private int socketPort;
     private int timeout;
+    private String username;
 
 
 }

@@ -12,13 +12,16 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class InfoPanel extends JPanel {
-    private final JPanel cmdPanel;
+    private final JPanel buttonPanel;
     private final JPanel softwareInfoPanel;
-    private final JPanel hardwareInfoPanel;
+    private final JPanel userInfoPanel;
 
     private final JTextField hostTF;
     private final JTextField portTF;
     private final JTextField timeoutTF;
+
+    private final JTextField usernameTF;
+    private final JTextField dirTF;
 
     private final JButton connectBtn;
     private final JButton disconnectBtn;
@@ -26,62 +29,95 @@ public class InfoPanel extends JPanel {
 
     public InfoPanel(IOEngine ioEngine) {
         this.ioEngine = ioEngine;
-
         this.setBorder(new LineBorder(new Color(0, 0, 0)));
         this.setLayout(new BorderLayout(0, 0));
 
-        cmdPanel = new JPanel();
-        add(cmdPanel, BorderLayout.NORTH);
-        cmdPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        buttonPanel = new JPanel();
+        add(buttonPanel, BorderLayout.NORTH);
+        buttonPanel.setLayout(new FlowLayout(FlowLayout.LEADING, 5, 5));
 
         JLabel hostLbl = new JLabel("Host : ");
-        cmdPanel.add(hostLbl);
+        buttonPanel.add(hostLbl);
 
         hostTF = new JTextField();
         hostTF.setText("localhost");
-        cmdPanel.add(hostTF);
-        hostTF.setColumns(10);
+        buttonPanel.add(hostTF);
+        hostTF.setColumns(13);
 
         Component horizontalStrut_6 = Box.createHorizontalStrut(10);
-        cmdPanel.add(horizontalStrut_6);
+        buttonPanel.add(horizontalStrut_6);
 
         JLabel portLbl = new JLabel("Port :");
-        cmdPanel.add(portLbl);
+        buttonPanel.add(portLbl);
 
         portTF = new JTextField();
         portTF.setText("8888");
-        cmdPanel.add(portTF);
+        buttonPanel.add(portTF);
         portTF.setColumns(10);
 
         Component horizontalStrut_7 = Box.createHorizontalStrut(10);
-        cmdPanel.add(horizontalStrut_7);
+        buttonPanel.add(horizontalStrut_7);
 
-        JLabel timeoutLbl = new JLabel("Timeout(mil) : ");
-        cmdPanel.add(timeoutLbl);
+        JLabel timeoutLbl = new JLabel("Timeout(millis) : ");
+        buttonPanel.add(timeoutLbl);
 
         timeoutTF = new JTextField();
         timeoutTF.setText("1000");
-        cmdPanel.add(timeoutTF);
+        buttonPanel.add(timeoutTF);
         timeoutTF.setColumns(10);
 
         Component horizontalStrut_8 = Box.createHorizontalStrut(10);
-        cmdPanel.add(horizontalStrut_8);
-
-        JLabel statusLbl = new JLabel("Status ");
-        cmdPanel.add(statusLbl);
+        buttonPanel.add(horizontalStrut_8);
 
         JLabel iconStatusLbl = new JLabel("");
-        cmdPanel.add(iconStatusLbl);
+        buttonPanel.add(iconStatusLbl);
 
         connectBtn = new JButton("Connect");
-        cmdPanel.add(connectBtn);
+        buttonPanel.add(connectBtn);
 
         disconnectBtn = new JButton("Disconnect");
-        cmdPanel.add(disconnectBtn);
+        buttonPanel.add(disconnectBtn);
 
+
+        // User info panel  setup */
+        userInfoPanel = new JPanel();
+        add(userInfoPanel, BorderLayout.CENTER);
+        userInfoPanel.setLayout(new FlowLayout(FlowLayout.LEADING, 5, 5));
+
+        JLabel userIdLbl = new JLabel("ID : ");
+        userInfoPanel.add(userIdLbl);
+
+        JLabel userId = new JLabel("       ");
+        userInfoPanel.add(userId);
+
+        Component horizontalStrut_1 = Box.createHorizontalStrut(20);
+        userInfoPanel.add(horizontalStrut_1);
+
+        JLabel userLbl = new JLabel("Username : ");
+        userInfoPanel.add(userLbl);
+
+        usernameTF = new JTextField();
+        usernameTF.setText("john doe");
+        userInfoPanel.add(usernameTF);
+        usernameTF.setColumns(13);
+
+        userInfoPanel.add(horizontalStrut_1);
+
+        JLabel userDirLbl = new JLabel("Dir : ");
+        userInfoPanel.add(userDirLbl);
+
+        dirTF = new JTextField();
+        dirTF.setText("/home/");
+        userInfoPanel.add(dirTF);
+        dirTF.setColumns(13);
+
+        userInfoPanel.add(horizontalStrut_1);
+
+
+        //Software & hardware info panel
         softwareInfoPanel = new JPanel();
-        add(softwareInfoPanel, BorderLayout.CENTER);
-        softwareInfoPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        add(softwareInfoPanel, BorderLayout.SOUTH);
+        softwareInfoPanel.setLayout(new FlowLayout(FlowLayout.LEADING, 5, 5));
 
         JLabel hostOsLbl = new JLabel("OS :");
         softwareInfoPanel.add(hostOsLbl);
@@ -98,60 +134,39 @@ public class InfoPanel extends JPanel {
         JLabel jreLblValue = new JLabel("1.8.0_281-b09");
         softwareInfoPanel.add(jreLblValue);
 
-        Component horizontalStrut_5 = Box.createHorizontalStrut(20);
-        softwareInfoPanel.add(horizontalStrut_5);
-
-        JLabel userLbl = new JLabel("User :");
-        softwareInfoPanel.add(userLbl);
-
-        JLabel userLblValue = new JLabel("johndoe");
-        softwareInfoPanel.add(userLblValue);
-
-        Component horizontalStrut_1 = Box.createHorizontalStrut(20);
-        softwareInfoPanel.add(horizontalStrut_1);
-
-        JLabel userDirLbl = new JLabel("User dir :");
-        softwareInfoPanel.add(userDirLbl);
-
-        JLabel userDirLblValue = new JLabel("/home/user");
-        softwareInfoPanel.add(userDirLblValue);
-
-        hardwareInfoPanel = new JPanel();
-        add(hardwareInfoPanel, BorderLayout.SOUTH);
-        hardwareInfoPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        softwareInfoPanel.add(horizontalStrut);
 
         JLabel cpuLbl = new JLabel("Cpu :");
-        hardwareInfoPanel.add(cpuLbl);
+        softwareInfoPanel.add(cpuLbl);
 
         JLabel cpuLblValue = new JLabel("i5");
-        hardwareInfoPanel.add(cpuLblValue);
+        softwareInfoPanel.add(cpuLblValue);
 
-        Component horizontalStrut_2 = Box.createHorizontalStrut(20);
-        hardwareInfoPanel.add(horizontalStrut_2);
+        softwareInfoPanel.add(horizontalStrut);
 
         JLabel cpuLoadLbl = new JLabel("Cpu-load : ");
-        hardwareInfoPanel.add(cpuLoadLbl);
+        softwareInfoPanel.add(cpuLoadLbl);
 
         JLabel cpuLoadLblValue = new JLabel("5%");
-        hardwareInfoPanel.add(cpuLoadLblValue);
-
-        Component horizontalStrut_3 = Box.createHorizontalStrut(20);
-        hardwareInfoPanel.add(horizontalStrut_3);
-
-        JLabel totalMemLbl = new JLabel("Total mem :");
-        hardwareInfoPanel.add(totalMemLbl);
-
-        JLabel totalMemLblValue = new JLabel("20 kb");
-        hardwareInfoPanel.add(totalMemLblValue);
+        softwareInfoPanel.add(cpuLoadLblValue);
 
         Component horizontalStrut_4 = Box.createHorizontalStrut(20);
-        hardwareInfoPanel.add(horizontalStrut_4);
+        softwareInfoPanel.add(horizontalStrut_4);
+
+        JLabel totalMemLbl = new JLabel("Total mem :");
+        softwareInfoPanel.add(totalMemLbl);
+
+        JLabel totalMemLblValue = new JLabel("20 kb");
+        softwareInfoPanel.add(totalMemLblValue);
+
+        softwareInfoPanel.add(horizontalStrut);
 
         JLabel freeMemLbl = new JLabel("Free mem :");
-        hardwareInfoPanel.add(freeMemLbl);
+        softwareInfoPanel.add(freeMemLbl);
 
         JLabel freeMemLblValue = new JLabel("30kb");
-        hardwareInfoPanel.add(freeMemLblValue);
+        softwareInfoPanel.add(freeMemLblValue);
+
 
         //Add button listeners
         addBtnActionListeners();
@@ -165,10 +180,11 @@ public class InfoPanel extends JPanel {
                 int timeout = getTimeout();
                 int port = getPort();
                 String host = getHost();
+                String username = getUsername();
 
                 LogUtil.info("Connect button pressed.");
                 try {
-                    ioEngine.connect(new SocketMeta(host, port, timeout));
+                    ioEngine.connect(new SocketMeta(host, port, timeout, username));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -202,6 +218,11 @@ public class InfoPanel extends JPanel {
 
     private String getHost() {
         String hostStr = this.hostTF.getText();
+        return hostStr;
+    }
+
+    private String getUsername() {
+        String hostStr = this.usernameTF.getText();
         return hostStr;
     }
 }

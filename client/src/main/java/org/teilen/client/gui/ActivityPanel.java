@@ -56,14 +56,14 @@ public class ActivityPanel extends JPanel {
             UserPanel userPanel = connPanel.userPanel;
             for (Packet packet : userMeta) {
                 UserPacket userPacket = (UserPacket) packet;
-                if (userPacket.userOp.name().equals(UserOp.USER_CREATE.name())) {
-                    userPanel.addUser(new User(userPacket.id, "Jame", "Doe"));
-                } else if (userPacket.userOp.name().equals(UserOp.USER_DELETE.name())) {
-                    userPanel.removeUser(new User(userPacket.id, "Jame", "Doe"));
+                if (userPacket.getUserOp().name().equals(UserOp.USER_CREATE.name())) {
+                    userPanel.addUser(new User(userPacket.getUserId(), "Jame", "Doe"));
+                } else if (userPacket.getUserOp().name().equals(UserOp.USER_DELETE.name())) {
+                    userPanel.removeUser(new User(userPacket.getUserId(), "Jame", "Doe"));
                 }
             }
             connPanel.userScrollPane.validate();
-            LogUtil.info("User panel updated.");
+            LogUtil.info("User-Panel packets : " + userMeta);
         }
     }
 

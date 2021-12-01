@@ -16,9 +16,9 @@ public class ClientMain {
         ActivityEngine activityEngine = new ActivityEngine();
         IOEngine ioEngine = new IOEngine();
 
-        ExecutorService executors = Executors.newFixedThreadPool(4);
-        executors.submit(activityEngine);
-        executors.submit(ioEngine);
+        ExecutorService executors = Executors.newFixedThreadPool(2);
+        executors.execute(activityEngine);
+        executors.execute(ioEngine);
 
         new ClientFrame(ioEngine, activityEngine);
     }

@@ -4,6 +4,9 @@ import org.teilen.client.domain.SocketMeta;
 import org.teilen.client.queue.PacketQueue;
 import org.teilen.client.util.LogUtil;
 import org.teilen.common.packet.Packet;
+import org.teilen.common.packet.comm.Request;
+import org.teilen.common.packet.comm.Response;
+import org.teilen.common.packet.comm.Status;
 import org.teilen.common.packet.meta.ConnOp;
 import org.teilen.common.packet.meta.ConnPacket;
 
@@ -11,11 +14,17 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 public class IOEngine implements Runnable {
     private Boolean connected = false;
     private Socket socket;
     private SocketMeta socketMeta;
+    private static final int threadSleep = 2000; //millis
+    private static final int packetNumber = 5;
+    private ObjectOutputStream out;
+    private ObjectInputStream in;
 
     public IOEngine() {
     }
@@ -26,53 +35,78 @@ public class IOEngine implements Runnable {
             while (true) {
                 while (connected) {
                     try {
-                        //Read from queue &
-                        //Write to socket
-                        boolean write = false;
-                        try {
-                            Packet out = PacketQueue.readPacket();
-                            ObjectOutputStream objectInputStream = new ObjectOutputStream(socket.getOutputStream());
-                            objectInputStream.writeObject(out);
-                            objectInputStream.flush();
-                            write = true;
-                            LogUtil.info("From queue-socket : " + out);
-                        } catch (Exception e) {
-                            e.printStackTrace();
+                        //Receiving from server to client
+                        Object inObject = in.readObject();
+                        while (inObject == null) {
+                            inObject = in.readObject();
+                        }
+                        if (inObject instanceof Request) {
+                            Request request = (Request) inObject;
+                            List<Packet> packets = new ArrayList<>();
+                            Response response = new Response(1, Status.OK);
+                            out.writeObject(response);
+                            out.flush();
+                            System.out.println("Client : acceptance response for server sent " + response);
+                            for (int i = 0; i < request.getPackets(); i++) {
+                                Object inPacket = in.readObject();
+                                while (inPacket == null) {
+                                    inPacket = in.readObject();
+                                }
+                                Packet packet = (Packet) inPacket;
+                                out.writeObject(response);
+                                out.flush();
+                                packets.add(packet);
+                                System.out.println("Client : received from server " + packet + ", client-response " + response);
+                            }
+                            PacketQueue.ioWriteIn(packets);
                         }
 
-                        //Read from socket
-                        //& Write to queue
-                        boolean read = false;
-                        if (write) {
-                            try {
-                                ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
-                                Object packet = objectInputStream.readObject();
-                                if (packet != null) {
-                                    Packet in = (Packet) packet;
-                                    PacketQueue.writePacket(in);
-                                    read = true;
-                                    LogUtil.info("From socket-queue : " + in);
+
+                        //Sending from client to server
+                        List<Packet> packetList = PacketQueue.ioReadOut(packetNumber);
+                        System.out.println("Client : packets " + packetList);
+                        out.writeObject(new Request(0, packetList.size()));
+                        out.flush();
+
+                        inObject = in.readObject();
+                        while (inObject == null) {
+                            inObject = in.readObject();
+                        }
+
+                        if (inObject instanceof Response) {
+                            Response response = (Response) inObject;
+                            if (response.getStatus().name().equals(Status.OK.name())) {
+                                for (int i = 0; i < packetList.size(); i++) {
+                                    Packet packet = packetList.get(i);
+                                    out.writeObject(packet);
+                                    out.flush();
+                                    Object packetObject = in.readObject();
+                                    while (packetObject == null) {
+                                        packetObject = in.readObject();
+                                    }
+                                    Response packetResponse = null;
+                                    if (packetObject instanceof Response) {
+                                        packetResponse = (Response) packetObject;
+                                        System.out.println("Client : - " + i + " sent packet " + packet + ", server-response " + packetResponse);
+                                    }
+                                    if (!packetResponse.getStatus().name().equals(Status.OK.name())) {
+                                        System.out.println("Client : stopped sending packets , server-response " + packetResponse);
+                                        break;
+                                    }
                                 }
-                            } catch (Exception e) {
-                                e.printStackTrace();
                             }
                         }
-
-                        if (!write && !read) {
-                            disconnect();
-                        }
-
                     } catch (Exception e) {
-
+                        e.printStackTrace();
+                        disconnect();
                     }
+                    Thread.sleep(threadSleep);
                 }
-                Thread.sleep(5000);
             }
         } catch (Exception e) {
-
+            e.printStackTrace();
         }
     }
-
 
 
     //Public methods to be called from info panel buttons
@@ -89,8 +123,11 @@ public class IOEngine implements Runnable {
             if (this.connected == false) {
                 this.socket = new Socket(socketMeta.getSocketHost(), socketMeta.getSocketPort());
                 this.connected = true;
+                this.out = new ObjectOutputStream(this.socket.getOutputStream());
+                this.in = new ObjectInputStream(this.socket.getInputStream());
+
                 LogUtil.info("Socket connected : " + this.socket);
-                PacketQueue.writePacket(new ConnPacket(ConnOp.ON));
+                PacketQueue.ioWriteIn(new ConnPacket(ConnOp.ON));
             }
         }
     }
@@ -99,10 +136,22 @@ public class IOEngine implements Runnable {
         synchronized (this.connected) {
             if (this.connected) {
                 this.connected = false;
+                try {
+                    this.out.close();
+                    this.out = null;
+                } catch (Exception e) {
+                }
+                try {
+                    this.in.close();
+                    this.in = null;
+                } catch (Exception e) {
+                }
+
                 this.socket.close();
                 LogUtil.info("Socket disconnected : " + this.socket);
                 this.socket = null;
-                PacketQueue.writePacket(new ConnPacket(ConnOp.OFF));
+
+                PacketQueue.ioWriteIn(new ConnPacket(ConnOp.OFF));
             }
         }
     }
