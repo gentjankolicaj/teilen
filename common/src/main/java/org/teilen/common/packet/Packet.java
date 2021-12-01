@@ -1,14 +1,15 @@
 package org.teilen.common.packet;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public abstract class Packet {
-    public Integer id;
+    private Integer originId;
+    private Integer destinationId;
 
 
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
 }

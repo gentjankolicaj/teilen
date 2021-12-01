@@ -11,5 +11,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class RoomPacket extends MetaPacket implements Serializable {
     public RoomOp roomOp;
+    private Integer roomId;
+
 
 }

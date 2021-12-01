@@ -109,8 +109,8 @@ public class Room {
         if (packets != null && packets.size() != 0) {
             for (int i = 0; i < packets.size(); i++) {
                 Packet tmp = packets.get(i);
-                Integer tmpPacketId = tmp.getId();
-                Integer packetId = newPacket.getId();
+                Integer tmpPacketId = tmp.getOriginId();
+                Integer packetId = newPacket.getOriginId();
                 if ((tmpPacketId != null && packetId != null) && (tmpPacketId.intValue() == packetId.intValue())) {
                     packets.remove(i);
                     break;
@@ -129,8 +129,8 @@ public class Room {
         } else {
             for (int i = 0; i < packets.size(); i++) {
                 Packet tmp = packets.get(i);
-                Integer tmpPacketId = tmp.getId();
-                Integer packetId = newPacket.getId();
+                Integer tmpPacketId = tmp.getOriginId();
+                Integer packetId = newPacket.getOriginId();
                 if ((tmpPacketId != null && packetId != null) && (tmpPacketId.intValue() == packetId.intValue())) {
                     packets.remove(i);
                     packets.add(newPacket);

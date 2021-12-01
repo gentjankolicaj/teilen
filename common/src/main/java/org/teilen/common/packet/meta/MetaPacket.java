@@ -1,6 +1,5 @@
 package org.teilen.common.packet.meta;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.teilen.common.packet.Packet;
@@ -9,8 +8,11 @@ import java.io.Serializable;
 
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 public class MetaPacket extends Packet implements Serializable {
-    public MetaType metaType;
+    private MetaType metaType;
 
+    public MetaPacket(Integer originId, Integer destinationId, MetaType metaType) {
+        super(originId, destinationId);
+        this.metaType = metaType;
+    }
 }
