@@ -34,7 +34,14 @@ public class IOEngine implements Runnable {
             LogUtil.info("Trying to connect to server : " + socketMeta);
             while (true) {
                 while (connected) {
+
                     try {
+                        if (out == null)
+                            this.out = new ObjectOutputStream(this.socket.getOutputStream());
+
+                        if (in == null)
+                            this.in = new ObjectInputStream(this.socket.getInputStream());
+
                         //Receiving from server to client
                         Object inObject = in.readObject();
                         while (inObject == null) {
@@ -63,9 +70,10 @@ public class IOEngine implements Runnable {
 
 
                         //Sending from client to server
-                        List<Packet> packetList = PacketQueue.ioReadOut(packetNumber);
-                        System.out.println("Client : packets " + packetList);
-                        out.writeObject(new Request(0, packetList.size()));
+                        List<Packet> clientPackets = PacketQueue.ioReadOut(packetNumber);
+                        System.out.println("Client : packets " + clientPackets);
+                        int clientPacketsNr = clientPackets != null ? clientPackets.size() : 0;
+                        out.writeObject(new Request(0, clientPacketsNr));
                         out.flush();
 
                         inObject = in.readObject();
@@ -76,8 +84,8 @@ public class IOEngine implements Runnable {
                         if (inObject instanceof Response) {
                             Response response = (Response) inObject;
                             if (response.getStatus().name().equals(Status.OK.name())) {
-                                for (int i = 0; i < packetList.size(); i++) {
-                                    Packet packet = packetList.get(i);
+                                for (int i = 0; i < clientPacketsNr; i++) {
+                                    Packet packet = clientPackets.get(i);
                                     out.writeObject(packet);
                                     out.flush();
                                     Object packetObject = in.readObject();
@@ -123,9 +131,6 @@ public class IOEngine implements Runnable {
             if (this.connected == false) {
                 this.socket = new Socket(socketMeta.getSocketHost(), socketMeta.getSocketPort());
                 this.connected = true;
-                this.out = new ObjectOutputStream(this.socket.getOutputStream());
-                this.in = new ObjectInputStream(this.socket.getInputStream());
-
                 LogUtil.info("Socket connected : " + this.socket);
                 PacketQueue.ioWriteIn(new ConnPacket(ConnOp.ON));
             }

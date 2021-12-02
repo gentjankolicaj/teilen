@@ -66,13 +66,13 @@ public class ActivityEngine implements Runnable {
 
                 } else if (packet instanceof RoomPacket) {
 
-                } else if (packet instanceof UserPacket) {
-                    UserPacket userPacket = (UserPacket) packet;
-                    if (userPacket.getUserOp().name().equals(UserOp.USER_CREATE.name())) {
+                } else if (packet instanceof ClientPacket) {
+                    ClientPacket clientPacket = (ClientPacket) packet;
+                    if (clientPacket.getClientOp().name().equals(ClientOp.CLIENT_CREATE.name())) {
 
-                    } else if (userPacket.getUserOp().name().equals(UserOp.USER_UPDATE.name())) {
+                    } else if (clientPacket.getClientOp().name().equals(ClientOp.CLIENT_UPDATE.name())) {
 
-                    } else if (userPacket.getUserOp().name().equals(UserOp.USER_DELETE.name())) {
+                    } else if (clientPacket.getClientOp().name().equals(ClientOp.CLIENT_DELETE.name())) {
 
                     }
                 }

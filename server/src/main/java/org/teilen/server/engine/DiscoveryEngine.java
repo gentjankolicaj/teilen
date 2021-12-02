@@ -1,6 +1,6 @@
 package org.teilen.server.engine;
 
-import org.teilen.server.domain.UserSocket;
+import org.teilen.server.domain.ClientSocket;
 import org.teilen.server.util.LogUtil;
 
 import java.io.IOException;
@@ -12,7 +12,7 @@ import java.net.SocketTimeoutException;
 public class DiscoveryEngine implements Runnable {
     private final IOEngine ioEngine;
     private final int serverSocketPort = 8888;
-    private static int counter = 1;
+    private static int counter = 0;
     private Boolean isRunning = false;
     private ServerSocket serverSocket;
     private final int serverSocketTimeout = 1500;
@@ -29,8 +29,8 @@ public class DiscoveryEngine implements Runnable {
                 while (isRunning) {
                     try {
                         Socket socket = serverSocket.accept();
-                        this.ioEngine.addUserSocket(new UserSocket(counter, socket));
                         counter++;
+                        this.ioEngine.addUserSocket(new ClientSocket(counter, socket));
                         LogUtil.info("Socket accepted : " + socket.toString());
 
                     } catch (SocketTimeoutException ste) {

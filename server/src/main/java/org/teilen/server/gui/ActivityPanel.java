@@ -3,9 +3,9 @@ package org.teilen.server.gui;
 import org.teilen.common.domain.Room;
 import org.teilen.common.domain.User;
 import org.teilen.common.packet.Packet;
+import org.teilen.common.packet.meta.ClientOp;
+import org.teilen.common.packet.meta.ClientPacket;
 import org.teilen.common.packet.meta.RoomPacket;
-import org.teilen.common.packet.meta.UserOp;
-import org.teilen.common.packet.meta.UserPacket;
 import org.teilen.server.util.LogUtil;
 
 import javax.swing.*;
@@ -77,36 +77,29 @@ public class ActivityPanel extends JSplitPane {
     private void updateUserMeta(List<Packet> userMeta) {
         if (userMeta != null) {
             for (Packet packet : userMeta) {
-                UserPacket userPacket = (UserPacket) packet;
-                if (userPacket.userOp.name().equals(UserOp.USER_CREATE.name())) {
-                    userPanel.addUser(new User(userPacket.id, "Jame", "Doe"));
-                } else if (userPacket.userOp.name().equals(UserOp.USER_DELETE.name())) {
-                    userPanel.removeUser(new User(userPacket.id, "Jame", "Doe"));
+                ClientPacket clientPacket = (ClientPacket) packet;
+                if (clientPacket.getClientOp().name().equals(ClientOp.CLIENT_CREATE.name())) {
+                    userPanel.addUser(new User(clientPacket.getClientId(), "Jame", "Doe"));
+                } else if (clientPacket.getClientOp().name().equals(ClientOp.CLIENT_DELETE.name())) {
+                    userPanel.removeUser(new User(clientPacket.getClientId(), "Jame", "Doe"));
                 }
             }
-            userScrollPane.validate();
-            LogUtil.info("User panel updated.");
+            userScrollPane.revalidate();
+            LogUtil.info("User-Panel packets : " + userMeta);
         }
     }
 
     private List<Packet> getUserMeta(List<Packet> metas) {
-        if (metas == null || metas.size() == 0)
-            return null;
-        else {
             List<Packet> userMetas = new ArrayList<>();
             for (Packet packet : metas) {
-                if (packet instanceof UserPacket) {
+                if (packet instanceof ClientPacket) {
                     userMetas.add(packet);
                 }
             }
             return userMetas;
-        }
     }
 
     private List<Packet> getRoomMeta(List<Packet> metas) {
-        if (metas == null || metas.size() == 0)
-            return null;
-        else {
             List<Packet> roomMetas = new ArrayList<>();
             for (Packet packet : metas) {
                 if (packet instanceof RoomPacket) {
@@ -114,7 +107,6 @@ public class ActivityPanel extends JSplitPane {
                 }
             }
             return roomMetas;
-        }
     }
 
 

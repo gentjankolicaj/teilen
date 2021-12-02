@@ -3,10 +3,10 @@ package org.teilen.client.gui;
 import org.teilen.client.util.LogUtil;
 import org.teilen.common.domain.User;
 import org.teilen.common.packet.Packet;
+import org.teilen.common.packet.meta.ClientOp;
+import org.teilen.common.packet.meta.ClientPacket;
 import org.teilen.common.packet.meta.ConnOp;
 import org.teilen.common.packet.meta.ConnPacket;
-import org.teilen.common.packet.meta.UserOp;
-import org.teilen.common.packet.meta.UserPacket;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -55,11 +55,11 @@ public class ActivityPanel extends JPanel {
         if (userMeta != null) {
             UserPanel userPanel = connPanel.userPanel;
             for (Packet packet : userMeta) {
-                UserPacket userPacket = (UserPacket) packet;
-                if (userPacket.getUserOp().name().equals(UserOp.USER_CREATE.name())) {
-                    userPanel.addUser(new User(userPacket.getUserId(), "Jame", "Doe"));
-                } else if (userPacket.getUserOp().name().equals(UserOp.USER_DELETE.name())) {
-                    userPanel.removeUser(new User(userPacket.getUserId(), "Jame", "Doe"));
+                ClientPacket clientPacket = (ClientPacket) packet;
+                if (clientPacket.getClientOp().name().equals(ClientOp.CLIENT_CREATE.name())) {
+                    userPanel.addUser(new User(clientPacket.getClientId(), "Jame", "Doe"));
+                } else if (clientPacket.getClientOp().name().equals(ClientOp.CLIENT_DELETE.name())) {
+                    userPanel.removeUser(new User(clientPacket.getClientId(), "Jame", "Doe"));
                 }
             }
             connPanel.userScrollPane.validate();
@@ -73,7 +73,7 @@ public class ActivityPanel extends JPanel {
         else {
             List<Packet> userMetas = new ArrayList<>();
             for (Packet packet : metas) {
-                if (packet instanceof UserPacket) {
+                if (packet instanceof ClientPacket) {
                     userMetas.add(packet);
                 }
             }
