@@ -19,10 +19,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class IOEngine implements Runnable {
-    private Boolean connected = false;
-    private SocketWrapper socketWrapper;
     private static final int threadSleep = 2000; //millis
     private static final int packetNumber = 5;
+    private static final long readWriteTimeout = 100;
+
+    private Boolean connected = false;
+    private SocketWrapper socketWrapper;
     private ObjectOutputStream out;
     private ObjectInputStream in;
 
@@ -41,26 +43,43 @@ public class IOEngine implements Runnable {
 
                         //Receiving from server to client
                         Object inObject = in.readObject();
+                        long start = System.currentTimeMillis();
+                        long diff = start;
                         while (inObject == null) {
                             inObject = in.readObject();
+                            diff = System.currentTimeMillis();
+                            if (diff - start <= readWriteTimeout) {
+                                LogUtil.info("Client : - failed to receive Proposal-Request from server.Timeout " + (diff - start));
+                                break;
+                            }
                         }
                         if (inObject instanceof Request) {
-                            Request request = (Request) inObject;
+                            Request firstRequest = (Request) inObject;
                             List<Packet> packets = new ArrayList<>();
-                            Response response = new Response(1, Status.OK);
-                            out.writeObject(response);
+                            Response firstResponse = new Response(1, Status.OK);
+                            out.writeObject(firstResponse);
                             out.flush();
-                            System.out.println("Client : acceptance response for server sent " + response);
-                            for (int i = 0; i < request.getPackets(); i++) {
+                            LogUtil.info("Client : From server received " + firstRequest);
+                            LogUtil.info("Client : To server sent " + firstResponse);
+                            int packetNr = firstRequest.getPackets();
+                            Outer:
+                            for (int i = 0; i < packetNr; i++) {
                                 Object inPacket = in.readObject();
+                                start = System.currentTimeMillis();
+                                diff = start;
                                 while (inPacket == null) {
                                     inPacket = in.readObject();
+                                    diff = System.currentTimeMillis();
+                                    if (diff - start <= readWriteTimeout) {
+                                        LogUtil.info("Client : - " + i + " failed to receive packet from server.Receiving stopped.Timeout : " + (diff - start));
+                                        break Outer;
+                                    }
                                 }
                                 Packet packet = (Packet) inPacket;
-                                out.writeObject(response);
+                                out.writeObject(firstResponse);
                                 out.flush();
                                 packets.add(packet);
-                                System.out.println("Client : received from server " + packet + ", client-response " + response);
+                                System.out.println("Client : received from server " + packet + ", client-response " + firstResponse);
                             }
                             PacketQueue.ioWriteIn(packets);
                         }
@@ -70,28 +89,47 @@ public class IOEngine implements Runnable {
                         List<Packet> clientPackets = PacketQueue.ioReadOut(packetNumber);
                         System.out.println("Client : packets " + clientPackets);
                         int clientPacketsNr = clientPackets != null ? clientPackets.size() : 0;
-                        out.writeObject(new Request(0, clientPacketsNr));
+                        Request secondRequest = new Request(0, clientPacketsNr);
+                        out.writeObject(secondRequest);
                         out.flush();
 
                         inObject = in.readObject();
+                        start = System.currentTimeMillis();
+                        diff = start;
                         while (inObject == null) {
                             inObject = in.readObject();
+                            diff = System.currentTimeMillis();
+                            if (diff - start <= readWriteTimeout) {
+                                LogUtil.info("Client : - failed to receive Request-Response from server.Timeout " + (diff - start));
+                                break;
+                            }
                         }
 
                         if (inObject instanceof Response) {
-                            Response response = (Response) inObject;
-                            if (response.getStatus().name().equals(Status.OK.name())) {
+                            Response secondResponse = (Response) inObject;
+                            LogUtil.info("Client : To server sent " + secondRequest);
+                            LogUtil.info("Client : From server received " + secondResponse);
+                            if (secondResponse.getStatus().name().equals(Status.OK.name())) {
+                                Outer:
                                 for (int i = 0; i < clientPacketsNr; i++) {
                                     Packet packet = clientPackets.get(i);
                                     out.writeObject(packet);
                                     out.flush();
-                                    Object packetObject = in.readObject();
-                                    while (packetObject == null) {
-                                        packetObject = in.readObject();
+                                    Object outPacket = in.readObject();
+                                    start = System.currentTimeMillis();
+                                    diff = start;
+                                    while (outPacket == null) {
+                                        outPacket = in.readObject();
+                                        diff = System.currentTimeMillis();
+                                        if (diff - start <= readWriteTimeout) {
+                                            LogUtil.info("Client : - " + i + " failed to sent packet to server " + packet + ", server-response " + outPacket + ".Sending stopped.Timeout : " + (diff - start));
+                                            break Outer;
+                                        }
                                     }
+
                                     Response packetResponse = null;
-                                    if (packetObject instanceof Response) {
-                                        packetResponse = (Response) packetObject;
+                                    if (outPacket instanceof Response) {
+                                        packetResponse = (Response) outPacket;
                                         System.out.println("Client : - " + i + " sent packet " + packet + ", server-response " + packetResponse);
                                     }
                                     if (!packetResponse.getStatus().name().equals(Status.OK.name())) {
@@ -120,7 +158,8 @@ public class IOEngine implements Runnable {
     public synchronized void connect(SocketMeta socketMeta) throws IOException {
             if (this.connected == false) {
                 Socket socket = new Socket(socketMeta.getSocketHost(), socketMeta.getSocketPort());
-                socketWrapper = new SocketWrapper(socket);
+                this.socketWrapper = new SocketWrapper(socket);
+                this.connected = true;
                 LogUtil.info("Socket connected : " + this.socketWrapper);
                 PacketQueue.ioWriteIn(new ConnPacket(ConnOp.ON));
             }
@@ -129,8 +168,8 @@ public class IOEngine implements Runnable {
 
     public synchronized void disconnect() throws IOException {
             if (this.connected) {
-                this.connected = false;
                 this.socketWrapper.close();
+                this.connected = false;
                 LogUtil.info("Socket disconnected : " + this.socketWrapper);
                 PacketQueue.ioWriteIn(new ConnPacket(ConnOp.OFF));
             }

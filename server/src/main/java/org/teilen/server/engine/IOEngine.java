@@ -25,7 +25,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class IOEngine extends Thread {
     private static final int threadSleep = 2000; //millis
     private static final int packetNumber = 5;
+    private static final long readWriteTimeout = 100;
     private static final List<ClientSocket> clientSockets = new CopyOnWriteArrayList<>();
+
     private DiscoveryEngine discoveryEngine;
     private Boolean discoveryEngineFlag = false;
 
@@ -98,27 +100,46 @@ public class IOEngine extends Thread {
                             List<Packet> serverPackets = PacketQueue.readOut(clientId, packetNumber);
                             LogUtil.info("Server : packets " + serverPackets);
                             int serverPacketsNr = serverPackets != null ? serverPackets.size() : 0;
-                            out.writeObject(new Request(0, serverPacketsNr));
+                            Request firstRequest = new Request(0, serverPacketsNr);
+                            out.writeObject(firstRequest);
                             out.flush();
 
                             Object inObject = in.readObject();
+                            long start = System.currentTimeMillis();
+                            long diff = start;
                             while (inObject == null) {
                                 inObject = in.readObject();
+                                diff = System.currentTimeMillis();
+                                if (diff - start <= readWriteTimeout) {
+                                    LogUtil.info("Server : - failed to receive Proposal-Response from client.Timeout " + (diff - start));
+                                    break;
+                                }
                             }
                             if (inObject instanceof Response) {
-                                Response response = (Response) inObject;
-                                if (response.getStatus().name().equals(Status.OK.name())) {
+                                Response firstResponse = (Response) inObject;
+                                LogUtil.info("Server : To client sent " + firstRequest);
+                                LogUtil.info("Server : From client received " + firstResponse);
+
+                                if (firstResponse.getStatus().name().equals(Status.OK.name())) {
+                                    Outer:
                                     for (int j = 0; j < serverPacketsNr; j++) {
                                         Packet packet = serverPackets.get(j);
                                         out.writeObject(packet);
                                         out.flush();
-                                        Object packetObject = in.readObject();
-                                        while (packetObject == null) {
-                                            packetObject = in.readObject();
+                                        Object outPacket = in.readObject();
+                                        start = System.currentTimeMillis();
+                                        diff = start;
+                                        while (outPacket == null) {
+                                            outPacket = in.readObject();
+                                            diff = System.currentTimeMillis();
+                                            if (diff - start <= readWriteTimeout) {
+                                                LogUtil.info("Server : - " + j + " failed to sent packet to client " + packet + ", client-response " + outPacket + ".Sending stopped.Timeout : " + (diff - start));
+                                                break Outer;
+                                            }
                                         }
                                         Response packetResponse = null;
-                                        if (packetObject instanceof Response) {
-                                            packetResponse = (Response) packetObject;
+                                        if (outPacket instanceof Response) {
+                                            packetResponse = (Response) outPacket;
                                             LogUtil.info("Server : - " + j + " sent packet " + packet + ", client-response " + packetResponse);
                                         }
                                         if (!packetResponse.getStatus().name().equals(Status.OK.name())) {
@@ -133,33 +154,47 @@ public class IOEngine extends Thread {
 
                             //Receiving from client to server
                             inObject = in.readObject();
+                            diff = start;
                             while (inObject == null) {
                                 inObject = in.readObject();
+                                diff = System.currentTimeMillis();
+                                if (diff - start <= readWriteTimeout) {
+                                    LogUtil.info("Server : - failed to receive Request-Proposal from client.Timeout " + (diff - start));
+                                    break;
+                                }
                             }
-                            if (inObject instanceof Request) {
-                                Request request = (Request) inObject;
-                                List<Packet> clientPackets = new ArrayList<>();
-                                Response response = new Response(0, Status.OK);
-                                out.writeObject(response);
-                                out.flush();
-                                LogUtil.info("Server : acceptance response for client sent " + response);
 
-                                for (int k = 0; k < request.getPackets(); k++) {
+                            if (inObject instanceof Request) {
+                                Request secondRequest = (Request) inObject;
+                                List<Packet> clientPackets = new ArrayList<>();
+                                Response secondResponse = new Response(0, Status.OK);
+                                out.writeObject(secondResponse);
+                                out.flush();
+                                LogUtil.info("Server : From client received " + secondRequest);
+                                LogUtil.info("Server : To client sent " + secondResponse);
+                                int packetNr = secondRequest.getPackets();
+                                Outer:
+                                for (int k = 0; k < packetNr; k++) {
                                     Object inPacket = in.readObject();
+                                    start = System.currentTimeMillis();
+                                    diff = start;
                                     while (inPacket == null) {
                                         inPacket = in.readObject();
+                                        diff = System.currentTimeMillis();
+                                        if (diff - start <= readWriteTimeout) {
+                                            LogUtil.info("Server : - " + k + " failed to receive packet from client , client-response " + inPacket + ".Receiving stopped.Timeout : " + (diff - start));
+                                            break Outer;
+                                        }
                                     }
                                     Packet packet = (Packet) inPacket;
-                                    out.writeObject(response);
+                                    out.writeObject(secondResponse);
                                     out.flush();
                                     clientPackets.add(packet);
-                                    LogUtil.info("Server : - " + k + " received from client " + packet + ", server-response " + response);
+                                    LogUtil.info("Server : - " + k + " received from client " + packet + ", server-response " + secondResponse);
                                 }
                                 PacketQueue.writeIn(clientPackets);
                             }
 
-                            out.close();
-                            in.close();
                         } catch (ClassNotFoundException e) {
                             e.printStackTrace();
                             removeClientsIndex.add(i);
