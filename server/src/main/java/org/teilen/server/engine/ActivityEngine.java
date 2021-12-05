@@ -16,6 +16,7 @@ public class ActivityEngine extends Thread {
     private ActivityPanel activityPanel;
     private static final int threadSleep = 2000; //millis
     private static final int packetNumber = 5;
+    private static boolean firstClientPacket = true;
 
     public ActivityEngine() {
         super("ActivityEngine");
@@ -26,11 +27,14 @@ public class ActivityEngine extends Thread {
         while (true) {
             try {
                 if (activityPanel != null) {
-                    LogUtil.info("AE: processing started ");
-                    process();
-                    LogUtil.info("AE: processing finished.");
+                    LogUtil.info("AE+GUI : processing started.");
+                    processWithGui();
+                    LogUtil.info("AE+GUI : processing finished.");
                     Thread.sleep(threadSleep);
                 } else {
+                    LogUtil.info("AE : processing started.");
+                    processWithoutGui();
+                    LogUtil.info("AE : processing finished.");
                     long otherSleep = (long) (threadSleep - (threadSleep * 0.9));
                     Thread.sleep(otherSleep);
                 }
@@ -41,7 +45,7 @@ public class ActivityEngine extends Thread {
     }
 
 
-    private void process() {
+    private void processWithGui() {
         try {
             List<Packet> packets = PacketQueue.readIn(packetNumber);
             if (packets != null && packets.size() != 0) {
@@ -58,10 +62,22 @@ public class ActivityEngine extends Thread {
         }
     }
 
+    private void processWithoutGui() {
+        try {
+            List<Packet> packets = PacketQueue.readIn(packetNumber);
+            if (packets != null && packets.size() != 0) {
+                //process in-queue packets and put them into out-queue
+                processPackets(packets);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 
     private void processPackets(List<Packet> packets) {
-        Map<Integer, List<Packet>> packetMap = new HashMap<>();
-        List<Packet> allClientsPacket = new ArrayList<>();
+        Map<Integer, List<Packet>> oneClientPacketMap = new HashMap<>();
+        Map<Integer, Packet> allClientsPacketMap = new HashMap<>();
 
         for (int i = 0; i < packets.size(); i++) {
             Packet packet = packets.get(i);
@@ -72,6 +88,7 @@ public class ActivityEngine extends Thread {
 
                 } else if (packet instanceof ClientPacket) {
                     ClientPacket clientPacket = (ClientPacket) packet;
+                    firstClientPacket = false;
                     if (clientPacket.getClientOp().name().equals(ClientOp.CLIENT_CREATE.name())) {
                         //create 2 packets
                         //1 update existing user with id
@@ -79,20 +96,18 @@ public class ActivityEngine extends Thread {
                         //origin -1 => origin from server,
                         //destination 0 => all users
                         ClientPacket updatePacket = new ClientPacket(-1, clientPacket.getClientId(), MetaType.USER, clientPacket.getClientId(), ClientOp.CLIENT_UPDATE);
-                        updatePacketMap(packetMap, clientPacket.getClientId(), updatePacket);
+                        updatePacketMap(oneClientPacketMap, clientPacket.getClientId(), updatePacket);
 
-                        allClientsPacket.add(new ClientPacket(-1, 0, MetaType.USER, clientPacket.getClientId(), ClientOp.CLIENT_CREATE));
-
-
+                        allClientsPacketMap.put(clientPacket.getClientId(), new ClientPacket(-1, 0, MetaType.USER, clientPacket.getClientId(), ClientOp.CLIENT_CREATE));
                     } else if (clientPacket.getClientOp().name().equals(ClientOp.CLIENT_UPDATE.name())) {
                         //origin from user
                         //Destination to all users
-                        allClientsPacket.add(new ClientPacket(clientPacket.getClientId(), 0, MetaType.USER, clientPacket.getClientId(), ClientOp.CLIENT_UPDATE));
+                        allClientsPacketMap.put(clientPacket.getClientId(), new ClientPacket(clientPacket.getClientId(), 0, MetaType.USER, clientPacket.getClientId(), ClientOp.CLIENT_UPDATE));
 
                     } else if (clientPacket.getClientOp().name().equals(ClientOp.CLIENT_DELETE.name())) {
                         //origin from server
                         //Destination to all users
-                        allClientsPacket.add(new ClientPacket(-1, 0, MetaType.USER, clientPacket.getClientId(), ClientOp.CLIENT_DELETE));
+                        allClientsPacketMap.put(clientPacket.getClientId(), new ClientPacket(-1, 0, MetaType.USER, clientPacket.getClientId(), ClientOp.CLIENT_DELETE));
                     }
                 }
 
@@ -109,15 +124,16 @@ public class ActivityEngine extends Thread {
             }
         }
 
-        if (allClientsPacket.size() != 0) {
-            for (Map.Entry<Integer, List<Packet>> entry : packetMap.entrySet()) {
-                List<Packet> clientPackets = entry.getValue();
-                clientPackets.addAll(allClientsPacket);
-            }
-        }
+        if (firstClientPacket) {
+            PacketQueue.writeOut(oneClientPacketMap);
+        } else {
+            if (allClientsPacketMap.size() != 0) {
+                PacketQueue.writeOutToAllExceptOrigin(allClientsPacketMap);
 
-        if (packetMap.size() != 0) {
-            PacketQueue.writeOut(packetMap);
+                if (oneClientPacketMap.size() != 0) {
+                    PacketQueue.writeOut(oneClientPacketMap);
+                }
+            }
         }
     }
 

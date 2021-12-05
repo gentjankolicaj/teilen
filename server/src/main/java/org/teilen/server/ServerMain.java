@@ -11,7 +11,7 @@ public class ServerMain {
      * Launch the application.
      */
     public static void main(String[] args) {
-        boolean launchGui = false;
+        boolean launchGui = true;
         ActivityEngine activityEngine = new ActivityEngine();
         IOEngine ioEngine = new IOEngine(launchGui);
 

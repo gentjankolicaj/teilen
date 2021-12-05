@@ -58,6 +58,19 @@ public class PacketQueue {
         }
     }
 
+    public static void writeOutToAllExceptOrigin(Map<Integer, Packet> allClientsPacket) {
+        for (Map.Entry<Integer, Packet> packetEntry : allClientsPacket.entrySet()) {
+            Integer clientId = packetEntry.getKey();
+            Packet packet = packetEntry.getValue();
+            for (Map.Entry<Integer, Queue<Packet>> outEntry : out.entrySet()) {
+                Integer outClientId = outEntry.getKey();
+                if (clientId.intValue() != outClientId.intValue()) {
+                    outEntry.getValue().add(packet);
+                }
+            }
+        }
+    }
+
 
     //==================================================
     //IN QUEUE
