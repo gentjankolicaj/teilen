@@ -1,6 +1,7 @@
 package org.teilen.client.engine;
 
 import org.teilen.client.domain.SocketMeta;
+import org.teilen.client.domain.SocketWrapper;
 import org.teilen.client.queue.PacketQueue;
 import org.teilen.client.util.LogUtil;
 import org.teilen.common.packet.Packet;
@@ -19,8 +20,7 @@ import java.util.List;
 
 public class IOEngine implements Runnable {
     private Boolean connected = false;
-    private Socket socket;
-    private SocketMeta socketMeta;
+    private SocketWrapper socketWrapper;
     private static final int threadSleep = 2000; //millis
     private static final int packetNumber = 5;
     private ObjectOutputStream out;
@@ -31,16 +31,13 @@ public class IOEngine implements Runnable {
 
     public void run() {
         try {
-            LogUtil.info("Trying to connect to server : " + socketMeta);
             while (true) {
+                if (connected) {
+                    out = socketWrapper.getOut();
+                    in = socketWrapper.getIn();
+                }
                 while (connected) {
-
                     try {
-                        if (out == null)
-                            this.out = new ObjectOutputStream(this.socket.getOutputStream());
-
-                        if (in == null)
-                            this.in = new ObjectInputStream(this.socket.getInputStream());
 
                         //Receiving from server to client
                         Object inObject = in.readObject();
@@ -110,6 +107,8 @@ public class IOEngine implements Runnable {
                     }
                     Thread.sleep(threadSleep);
                 }
+                Thread.sleep(threadSleep);
+                LogUtil.info("Waiting to connect to server...");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -119,46 +118,22 @@ public class IOEngine implements Runnable {
 
     //Public methods to be called from info panel buttons
     public synchronized void connect(SocketMeta socketMeta) throws IOException {
-        if (this.socketMeta == null) {
-            this.socketMeta = socketMeta;
-        } else {
-            synchronized (this.socketMeta) {
-                this.socketMeta = socketMeta;
-            }
-        }
-
-        synchronized (this.connected) {
             if (this.connected == false) {
-                this.socket = new Socket(socketMeta.getSocketHost(), socketMeta.getSocketPort());
-                this.connected = true;
-                LogUtil.info("Socket connected : " + this.socket);
+                Socket socket = new Socket(socketMeta.getSocketHost(), socketMeta.getSocketPort());
+                socketWrapper = new SocketWrapper(socket);
+                LogUtil.info("Socket connected : " + this.socketWrapper);
                 PacketQueue.ioWriteIn(new ConnPacket(ConnOp.ON));
             }
-        }
+
     }
 
     public synchronized void disconnect() throws IOException {
-        synchronized (this.connected) {
             if (this.connected) {
                 this.connected = false;
-                try {
-                    this.out.close();
-                    this.out = null;
-                } catch (Exception e) {
-                }
-                try {
-                    this.in.close();
-                    this.in = null;
-                } catch (Exception e) {
-                }
-
-                this.socket.close();
-                LogUtil.info("Socket disconnected : " + this.socket);
-                this.socket = null;
-
+                this.socketWrapper.close();
+                LogUtil.info("Socket disconnected : " + this.socketWrapper);
                 PacketQueue.ioWriteIn(new ConnPacket(ConnOp.OFF));
             }
-        }
     }
 
 }

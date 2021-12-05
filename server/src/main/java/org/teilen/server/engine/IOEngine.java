@@ -23,13 +23,15 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class IOEngine extends Thread {
-    private static final int threadSleep = 200; //millis
+    private static final int threadSleep = 2000; //millis
     private static final int packetNumber = 5;
     private static final List<ClientSocket> clientSockets = new CopyOnWriteArrayList<>();
     private DiscoveryEngine discoveryEngine;
     private Boolean discoveryEngineFlag = false;
 
-    public IOEngine() {
+    public IOEngine(boolean gui) {
+        super("IOEngine");
+        this.discoveryEngineFlag = !gui;
     }
 
     private static void removeClientSocket(ClientSocket clientSocket) {
@@ -54,7 +56,7 @@ public class IOEngine extends Thread {
             clientSockets.add(clientSocket);
             ClientPacket clientPacket = new ClientPacket(-1, 0, MetaType.USER, clientSocket.getClientId(), ClientOp.CLIENT_CREATE);
             PacketQueue.writeIn(clientPacket);
-            LogUtil.info("Socket accepted : " + clientSocket.getSocket().toString());
+            LogUtil.info("Socket accepted : " + clientSocket);
 
         }
     }
@@ -212,6 +214,7 @@ public class IOEngine extends Thread {
         private ServerSocket serverSocket;
 
         public DiscoveryEngine() {
+            super("DiscoveryEngine");
         }
 
         @Override
@@ -225,7 +228,8 @@ public class IOEngine extends Thread {
                     try {
                         Socket socket = serverSocket.accept();
                         counter++;
-                        addClientSocket(new ClientSocket(counter, socket));
+                        ClientSocket clientSocket = new ClientSocket(counter, socket);
+                        addClientSocket(clientSocket);
 
                     } catch (SocketTimeoutException ste) {
                         LogUtil.warn("Socket server timeout " + serverSocketTimeout + " reached.");

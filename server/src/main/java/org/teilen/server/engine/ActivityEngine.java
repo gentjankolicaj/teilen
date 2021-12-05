@@ -12,10 +12,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ActivityEngine implements Runnable {
+public class ActivityEngine extends Thread {
     private ActivityPanel activityPanel;
     private static final int threadSleep = 2000; //millis
     private static final int packetNumber = 5;
+
+    public ActivityEngine() {
+        super("ActivityEngine");
+    }
 
     @Override
     public void run() {

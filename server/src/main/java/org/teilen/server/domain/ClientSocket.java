@@ -18,25 +18,20 @@ public class ClientSocket {
     private ObjectInputStream in;
     private ObjectOutputStream out;
 
-    public ClientSocket(Integer clientId, Socket socket) {
+    public ClientSocket(Integer clientId, Socket socket) throws IOException {
         this.clientId = clientId;
         this.socket = socket;
+        this.out = new ObjectOutputStream(socket.getOutputStream());
+        this.in = new ObjectInputStream(socket.getInputStream());
     }
 
     public ObjectOutputStream getOut() throws IOException {
-        if (out == null) {
-            this.out = new ObjectOutputStream(socket.getOutputStream());
-        }
         return out;
     }
 
     public ObjectInputStream getIn() throws IOException {
-        if (in == null) {
-            this.in = new ObjectInputStream(socket.getInputStream());
-        }
         return in;
     }
-
 
     public Integer getClientId() {
         return clientId;
@@ -101,5 +96,13 @@ public class ClientSocket {
     @Override
     public int hashCode() {
         return Objects.hash(clientId, socket);
+    }
+
+    @Override
+    public String toString() {
+        return "ClientSocket{" +
+                "clientId=" + clientId +
+                ", socket=" + socket +
+                '}';
     }
 }

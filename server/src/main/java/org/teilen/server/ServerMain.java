@@ -4,8 +4,6 @@ import org.teilen.server.engine.ActivityEngine;
 import org.teilen.server.engine.IOEngine;
 import org.teilen.server.gui.ServerFrame;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class ServerMain {
 
@@ -13,13 +11,15 @@ public class ServerMain {
      * Launch the application.
      */
     public static void main(String[] args) {
+        boolean launchGui = false;
         ActivityEngine activityEngine = new ActivityEngine();
-        IOEngine ioEngine = new IOEngine();
+        IOEngine ioEngine = new IOEngine(launchGui);
 
-        ExecutorService executor = Executors.newFixedThreadPool(2);
-        executor.submit(ioEngine);
-        executor.submit(activityEngine);
+        ioEngine.start();
+        activityEngine.start();
 
-        new ServerFrame(activityEngine, ioEngine);
+        if (launchGui) {
+            new ServerFrame(activityEngine, ioEngine);
+        }
     }
 }
