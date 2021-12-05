@@ -5,6 +5,7 @@ import org.teilen.common.packet.media.*;
 import org.teilen.common.packet.meta.*;
 import org.teilen.server.gui.ActivityPanel;
 import org.teilen.server.queue.PacketQueue;
+import org.teilen.server.util.LogUtil;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,9 +22,9 @@ public class ActivityEngine implements Runnable {
         while (true) {
             try {
                 if (activityPanel != null) {
-                    System.out.println("AE: processing started ");
+                    LogUtil.info("AE: processing started ");
                     process();
-                    System.out.println("AE: processing finished.");
+                    LogUtil.info("AE: processing finished.");
                     Thread.sleep(threadSleep);
                 } else {
                     long otherSleep = (long) (threadSleep - (threadSleep * 0.9));
@@ -130,7 +131,7 @@ public class ActivityEngine implements Runnable {
     private List<Packet> getMetaPackets(List<Packet> packets) {
         if (packets != null && packets.size() != 0) {
             List<Packet> metas = new ArrayList<>();
-            for (Packet packet : metas) {
+            for (Packet packet : packets) {
                 if (packet instanceof MetaPacket) {
                     metas.add(packet);
                 }

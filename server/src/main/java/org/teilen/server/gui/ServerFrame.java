@@ -1,7 +1,7 @@
 package org.teilen.server.gui;
 
 import org.teilen.server.engine.ActivityEngine;
-import org.teilen.server.engine.DiscoveryEngine;
+import org.teilen.server.engine.IOEngine;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -15,7 +15,7 @@ public class ServerFrame extends JFrame {
     private final JPanel cmdPanel;
 
 
-    public ServerFrame(ActivityEngine activityEngine, DiscoveryEngine discoveryEngine) {
+    public ServerFrame(ActivityEngine activityEngine, IOEngine ioEngine) {
         this.setTitle("Teilen-SERVER");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setBounds(100, 100, 900, 750);
@@ -27,7 +27,7 @@ public class ServerFrame extends JFrame {
 
         this.infoPanel = new InfoPanel();
         this.activityPanel = new ActivityPanel();
-        this.cmdPanel = new CmdPanel(discoveryEngine);
+        this.cmdPanel = new CmdPanel(ioEngine);
 
         this.contentPane.add(infoPanel, BorderLayout.NORTH);
         this.contentPane.add(activityPanel, BorderLayout.CENTER);

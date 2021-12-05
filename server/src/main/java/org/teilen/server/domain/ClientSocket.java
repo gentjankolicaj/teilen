@@ -61,26 +61,30 @@ public class ClientSocket {
 
     private void closeO() {
         try {
-            out.close();
+            if (out != null)
+                out.close();
             out = null;
-        } catch (IOException io) {
-            io.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
     private void closeI() {
         try {
-            in.close();
+            if (in != null)
+                in.close();
             in = null;
-        } catch (IOException io) {
-            io.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
     public void close() {
         closeIO();
         try {
-            socket.close();
+            if (socket != null)
+                socket.close();
+            socket = null;
         } catch (IOException io) {
             io.printStackTrace();
         }

@@ -1,7 +1,6 @@
 package org.teilen.server.gui;
 
-import org.teilen.server.engine.DiscoveryEngine;
-import org.teilen.server.util.LogUtil;
+import org.teilen.server.engine.IOEngine;
 
 import javax.swing.*;
 import java.awt.*;
@@ -12,10 +11,10 @@ public class CmdPanel extends JPanel {
     private final JButton closeGuiBtn;
     private final JButton shutdownBtn;
     private final JButton startBtn;
-    private final DiscoveryEngine discoveryEngine;
+    private final IOEngine ioEngine;
 
-    public CmdPanel(DiscoveryEngine discoveryEngine) {
-        this.discoveryEngine = discoveryEngine;
+    public CmdPanel(IOEngine ioEngine) {
+        this.ioEngine = ioEngine;
 
         this.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
         this.startBtn = new JButton("Start");
@@ -35,11 +34,11 @@ public class CmdPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 //Start start socket server
-                if (discoveryEngine != null) {
+                if (ioEngine != null) {
                     try {
-                        discoveryEngine.startSocketServer();
+                        ioEngine.startServer();
                     } catch (Exception e) {
-                        LogUtil.error(e.getMessage());
+                        e.printStackTrace();
                     }
                 }
             }
@@ -49,11 +48,11 @@ public class CmdPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 //Start start socket server
-                if (discoveryEngine != null) {
+                if (ioEngine != null) {
                     try {
-                        discoveryEngine.shutdownSocketServer();
+                        ioEngine.shutdownServer();
                     } catch (Exception e) {
-                        LogUtil.error(e.getMessage());
+                        e.printStackTrace();
                     }
                 }
             }
@@ -62,6 +61,11 @@ public class CmdPanel extends JPanel {
         closeGuiBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
+                try {
+                    ioEngine.shutdownServer();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 System.exit(0);
             }
         });
