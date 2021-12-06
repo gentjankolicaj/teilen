@@ -1,4 +1,4 @@
-# teilen-webcam
+# teilen
 
 Desktop communication application with sockets.It also has messaging, file transfer.
 
