@@ -6,9 +6,11 @@ import org.teilen.common.packet.base.Packet;
 import org.teilen.common.packet.meta.ClientOp;
 import org.teilen.common.packet.meta.ClientPacket;
 import org.teilen.common.packet.meta.RoomPacket;
+import org.teilen.server.global.GlobalConfig;
 import org.teilen.server.util.LogUtil;
 
 import javax.swing.*;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,6 +23,7 @@ public class ActivityPanel extends JSplitPane {
     private final RoomPanel roomPanel;
 
     public ActivityPanel() {
+        this.setPreferredSize(new Dimension((int) (GlobalConfig.width * 0.75), (int) (GlobalConfig.height * 0.5)));
         this.setContinuousLayout(true);
         this.setOrientation(SwingConstants.VERTICAL);
 

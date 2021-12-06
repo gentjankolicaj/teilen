@@ -9,6 +9,10 @@ public class ClientRepository {
 
     static final Map<Integer, Client> clients = new HashMap<>();
 
+    public static Map<Integer, Client> findAll() {
+        return clients;
+    }
+
     public static Client findClientById(Integer clientId) {
         return clients.get(clientId);
     }
@@ -28,6 +32,10 @@ public class ClientRepository {
 
     public static void deleteClient(Client client) {
         clients.remove(client.getId());
+    }
+
+    public static void deleteClient(Integer clientId) {
+        clients.remove(clientId);
     }
 
 }
