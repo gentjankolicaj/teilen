@@ -1,6 +1,6 @@
 package org.teilen.client.queue;
 
-import org.teilen.common.packet.Packet;
+import org.teilen.common.packet.base.Packet;
 
 import java.util.ArrayList;
 import java.util.LinkedList;

@@ -2,9 +2,12 @@ package org.teilen.client.engine;
 
 import org.teilen.client.gui.ActivityPanel;
 import org.teilen.client.queue.PacketQueue;
-import org.teilen.common.packet.Packet;
+import org.teilen.common.packet.base.Packet;
 import org.teilen.common.packet.media.*;
-import org.teilen.common.packet.meta.*;
+import org.teilen.common.packet.meta.ClientOp;
+import org.teilen.common.packet.meta.ClientPacket;
+import org.teilen.common.packet.meta.ConnPacket;
+import org.teilen.common.packet.meta.RoomPacket;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +20,10 @@ public class ActivityEngine implements Runnable {
     public ActivityEngine() {
     }
 
+    public void setActivityPanel(ActivityPanel activityPanel) {
+        this.activityPanel = activityPanel;
+    }
+
     @Override
     public void run() {
         while (true) {
@@ -27,21 +34,8 @@ public class ActivityEngine implements Runnable {
                         //process in-queue packets and put them into out-queue
                         processPackets(packets);
 
-                        List<Packet> metas = new ArrayList<>();
-                        List<Packet> medias = new ArrayList<>();
-                        for (int i = 0; i < packets.size(); i++) {
-                            Packet packet = packets.get(i);
-                            if (packet == null)
-                                continue;
-                            if (packet instanceof MetaPacket) {
-                                metas.add(packet);
-                            } else if (packet instanceof MetaPacket) {
-                                medias.add(packet);
-                            }
-                        }
-                        if (metas.size() != 0) {
-                            activityPanel.updateMeta(metas);
-                        }
+                        //Process changes at gui
+                        activityPanel.processGui(packets);
                     }
                 } else {
                     long otherSleep = (long) (threadSleep - (threadSleep * 0.9));
@@ -49,11 +43,9 @@ public class ActivityEngine implements Runnable {
                 }
                 Thread.sleep(threadSleep);
             } catch (Exception e) {
-
+                e.printStackTrace();
             }
         }
-
-
     }
 
 
@@ -61,7 +53,17 @@ public class ActivityEngine implements Runnable {
         List<Packet> processedPackets = new ArrayList<>();
         for (int i = 0; i < packets.size(); i++) {
             Packet packet = packets.get(i);
-            if (packet instanceof MetaPacket) {
+            if (packet instanceof MediaPacket) {
+                if (packet instanceof TextPacket) {
+
+                } else if (packet instanceof SoundPacket) {
+
+                } else if (packet instanceof VideoPacket) {
+
+                } else if (packet instanceof FilePacket) {
+
+                }
+            } else {
                 if (packet instanceof ConnPacket) {
 
                 } else if (packet instanceof RoomPacket) {
@@ -76,24 +78,9 @@ public class ActivityEngine implements Runnable {
 
                     }
                 }
-
-            } else if (packet instanceof MediaPacket) {
-                if (packet instanceof TextPacket) {
-
-                } else if (packet instanceof SoundPacket) {
-
-                } else if (packet instanceof VideoPacket) {
-
-                } else if (packet instanceof FilePacket) {
-
-                }
             }
         }
         PacketQueue.activityWriteOut(processedPackets);
     }
 
-
-    public void setActivityPanel(ActivityPanel activityPanel) {
-        this.activityPanel = activityPanel;
-    }
 }

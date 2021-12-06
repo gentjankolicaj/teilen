@@ -4,7 +4,7 @@ import org.teilen.client.domain.SocketMeta;
 import org.teilen.client.domain.SocketWrapper;
 import org.teilen.client.queue.PacketQueue;
 import org.teilen.client.util.LogUtil;
-import org.teilen.common.packet.Packet;
+import org.teilen.common.packet.base.Packet;
 import org.teilen.common.packet.comm.Request;
 import org.teilen.common.packet.comm.Response;
 import org.teilen.common.packet.comm.Status;
