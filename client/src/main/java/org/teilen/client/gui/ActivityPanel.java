@@ -46,6 +46,8 @@ public class ActivityPanel extends JPanel {
                 connPanel.setServerImageGreen();
             } else if (connPacket.connOp.name().equals(ConnOp.OFF.name())) {
                 connPanel.setServerImageRed();
+                connPanel.userPanel.removeAllClients();
+                connPanel.userScrollPane.validate();
             } else {
                 //do other actions based on impl
             }
@@ -59,9 +61,9 @@ public class ActivityPanel extends JPanel {
             for (Packet packet : userMeta) {
                 ClientPacket clientPacket = (ClientPacket) packet;
                 if (clientPacket.getClientOp().name().equals(ClientOp.CLIENT_CREATE.name())) {
-                    userPanel.addUser(new Client(clientPacket.getClientId(), "Jame", "Doe"));
+                    userPanel.addClient(new Client(clientPacket.getClientId(), "Jame", "Doe"));
                 } else if (clientPacket.getClientOp().name().equals(ClientOp.CLIENT_DELETE.name())) {
-                    userPanel.removeUser(new Client(clientPacket.getClientId(), "Jame", "Doe"));
+                    userPanel.removeClient(new Client(clientPacket.getClientId(), "Jame", "Doe"));
                 }
             }
             connPanel.userScrollPane.validate();

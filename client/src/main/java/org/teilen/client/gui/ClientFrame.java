@@ -20,7 +20,7 @@ public class ClientFrame extends JFrame {
 	 * @param activityEngine
 	 */
 	public ClientFrame(IOEngine ioEngine, ActivityEngine activityEngine) {
-		this.setTitle("Teilen-CLIENT");
+		this.setTitle("Teilen ~ CLIENT");
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.setBounds(GlobalConfig.xBound, GlobalConfig.yBound, GlobalConfig.width, GlobalConfig.height);
 		contentPane = new JPanel();

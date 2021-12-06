@@ -16,7 +16,7 @@ public class ServerFrame extends JFrame {
 
 
     public ServerFrame(ActivityEngine activityEngine, IOEngine ioEngine) {
-        this.setTitle("Teilen-SERVER");
+        this.setTitle("Teilen ~ SERVER");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setBounds(GlobalConfig.xBound, GlobalConfig.yBound, GlobalConfig.width, GlobalConfig.height);
 

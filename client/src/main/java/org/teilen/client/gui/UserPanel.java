@@ -25,7 +25,7 @@ public class UserPanel extends JList<String> {
         return new ImageIcon(ActivityPanel.class.getClassLoader().getResource("icons8-group-30.png"));
     }
 
-    public void addUser(Client client) {
+    public void addClient(Client client) {
         if (clients != null) {
             boolean found = false;
             for (int i = 0; i < clients.size(); i++) {
@@ -60,7 +60,7 @@ public class UserPanel extends JList<String> {
         return username;
     }
 
-    public void removeUser(Client client) {
+    public void removeClient(Client client) {
         if (clients != null && clients.size() != 0) {
             boolean found = false;
             int removeIndex = -1;
@@ -78,6 +78,13 @@ public class UserPanel extends JList<String> {
                 clients.remove(removeIndex);
                 userModelList.remove(removeIndex);
             }
+        }
+    }
+
+    public void removeAllClients() {
+        if (clients != null && clients.size() != 0) {
+            clients.removeAll(clients);
+            userModelList.removeAllElements();
         }
     }
 
