@@ -9,15 +9,15 @@ public class ClientRepository {
 
     static final Map<Integer, Client> clients = new HashMap<>();
 
-    static Client findClientById(Integer clientId) {
+    public static Client findClientById(Integer clientId) {
         return clients.get(clientId);
     }
 
-    static void insertClient(Client client) {
+    public static void insertClient(Client client) {
         clients.put(client.getId(), client);
     }
 
-    static void updateClient(Client client) {
+    public static void updateClient(Client client) {
         Client actual = clients.get(client.getId());
         if (actual != null) {
             clients.replace(client.getId(), actual, client);
@@ -26,8 +26,11 @@ public class ClientRepository {
         }
     }
 
-    static void deleteClient(Client client) {
+    public static void deleteClient(Client client) {
         clients.remove(client.getId());
     }
 
+    public static void deleteClient(Integer clientId) {
+        clients.remove(clientId);
+    }
 }

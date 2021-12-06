@@ -1,5 +1,6 @@
 package org.teilen.client.gui;
 
+import org.teilen.client.global.GlobalConfig;
 import org.teilen.client.util.LogUtil;
 import org.teilen.common.domain.Client;
 import org.teilen.common.packet.base.Packet;
@@ -19,8 +20,9 @@ public class ActivityPanel extends JPanel {
     private final RoomPanel roomPanel;
 
     public ActivityPanel() {
-        setBorder(new EmptyBorder(5, 5, 5, 5));
-        setLayout(new BorderLayout(0, 0));
+        this.setPreferredSize(new Dimension(GlobalConfig.width, (int) (GlobalConfig.height * 0.55)));
+        this.setBorder(new EmptyBorder(5, 5, 5, 5));
+        this.setLayout(new BorderLayout(0, 0));
         this.connPanel = new ConnPanel();
         this.add(connPanel, BorderLayout.WEST);
 

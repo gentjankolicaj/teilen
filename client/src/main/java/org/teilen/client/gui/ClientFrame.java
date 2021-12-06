@@ -2,6 +2,7 @@ package org.teilen.client.gui;
 
 import org.teilen.client.engine.ActivityEngine;
 import org.teilen.client.engine.IOEngine;
+import org.teilen.client.global.GlobalConfig;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -21,23 +22,24 @@ public class ClientFrame extends JFrame {
 	public ClientFrame(IOEngine ioEngine, ActivityEngine activityEngine) {
 		this.setTitle("Teilen-CLIENT");
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		this.setBounds(100, 100, 900, 700);
+		this.setBounds(GlobalConfig.xBound, GlobalConfig.yBound, GlobalConfig.width, GlobalConfig.height);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		contentPane.setLayout(new BorderLayout(0, 0));
 		setContentPane(contentPane);
 
-		infoPanel = new InfoPanel(ioEngine);
+		this.infoPanel = new InfoPanel(ioEngine);
 		contentPane.add(infoPanel, BorderLayout.NORTH);
 
-		activityPanel = new ActivityPanel();
+		this.activityPanel = new ActivityPanel();
 		contentPane.add(activityPanel, BorderLayout.CENTER);
 
-		aboutPanel = new AboutPanel();
+		this.aboutPanel = new AboutPanel();
 		contentPane.add(aboutPanel, BorderLayout.SOUTH);
 
 		this.setVisible(true);
-		this.setResizable(true);
+		this.setResizable(false);
+		this.pack();
 
 		//Set panels to be used by activity engine
 		activityEngine.setActivityPanel(activityPanel);
