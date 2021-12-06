@@ -1,6 +1,6 @@
 package org.teilen.server.gui;
 
-import org.teilen.common.domain.User;
+import org.teilen.common.domain.Client;
 
 import javax.swing.*;
 import java.awt.*;
@@ -9,7 +9,7 @@ import java.util.List;
 
 public class UserPanel extends JList<String> {
     static DefaultListModel<String> userModelList = new DefaultListModel<>();
-    static List<User> users = new ArrayList<>();
+    static List<Client> clients = new ArrayList<>();
     private final ImageIcon userImageIcon = getUserImageIcon();
 
     public UserPanel() {
@@ -21,22 +21,22 @@ public class UserPanel extends JList<String> {
         return new ImageIcon(ActivityPanel.class.getClassLoader().getResource("icons8-user-30.png"));
     }
 
-    public void addUser(User user) {
-        if (users != null) {
+    public void addUser(Client client) {
+        if (clients != null) {
             boolean found = false;
-            for (int i = 0; i < users.size(); i++) {
-                User tmp = users.get(i);
+            for (int i = 0; i < clients.size(); i++) {
+                Client tmp = clients.get(i);
                 Integer tmpUserId = tmp.getId();
-                Integer userId = user.getId();
+                Integer userId = client.getId();
                 if ((tmpUserId != null && userId != null) && (tmpUserId.intValue() == userId.intValue())) {
                     found = true;
                     break;
                 }
             }
             if (!found) {
-                int addIndex = users.size(); //because is total number and index start from 0
-                users.add(user);
-                String username = getUsername(user);
+                int addIndex = clients.size(); //because is total number and index start from 0
+                clients.add(client);
+                String username = getUsername(client);
                 userModelList.add(addIndex, username);
 
                 /** todo in future
@@ -47,23 +47,23 @@ public class UserPanel extends JList<String> {
 
     }
 
-    private String getUsername(User user) {
+    private String getUsername(Client client) {
         String username = null;
-        if (user != null) {
-            username = user.getFirstname() + " " + user.getLastname() + ":" + user.getId();
+        if (client != null) {
+            username = client.getFirstname() + " " + client.getLastname() + ":" + client.getId();
         } else
             username = "";
         return username;
     }
 
-    public void removeUser(User user) {
-        if (users != null && users.size() != 0) {
+    public void removeUser(Client client) {
+        if (clients != null && clients.size() != 0) {
             boolean found = false;
             int removeIndex = -1;
-            for (int i = 0; i < users.size(); i++) {
-                User tmp = users.get(i);
+            for (int i = 0; i < clients.size(); i++) {
+                Client tmp = clients.get(i);
                 Integer tmpUserId = tmp.getId();
-                Integer userId = user.getId();
+                Integer userId = client.getId();
                 if ((tmpUserId != null && userId != null) && (tmpUserId.intValue() == userId.intValue())) {
                     found = true;
                     removeIndex = i;
@@ -71,7 +71,7 @@ public class UserPanel extends JList<String> {
                 }
             }
             if (found) {
-                users.remove(removeIndex);
+                clients.remove(removeIndex);
                 userModelList.remove(removeIndex);
             }
         }

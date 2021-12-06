@@ -1,12 +1,12 @@
 package org.teilen.server.engine;
 
-import org.teilen.common.packet.Packet;
+import org.teilen.common.packet.base.Header;
+import org.teilen.common.packet.base.Packet;
 import org.teilen.common.packet.comm.Request;
 import org.teilen.common.packet.comm.Response;
 import org.teilen.common.packet.comm.Status;
 import org.teilen.common.packet.meta.ClientOp;
 import org.teilen.common.packet.meta.ClientPacket;
-import org.teilen.common.packet.meta.MetaType;
 import org.teilen.server.domain.ClientSocket;
 import org.teilen.server.queue.PacketQueue;
 import org.teilen.server.util.LogUtil;
@@ -39,7 +39,7 @@ public class IOEngine extends Thread {
     private static void removeClientSocket(ClientSocket clientSocket) {
         if (clientSocket != null) {
             clientSocket.close();
-            ClientPacket clientPacket = new ClientPacket(-1, 0, MetaType.USER, clientSocket.getClientId(), ClientOp.CLIENT_DELETE);
+            ClientPacket clientPacket = new ClientPacket(new Header(-1, 0), clientSocket.getClientId(), ClientOp.CLIENT_DELETE);
             PacketQueue.writeIn(clientPacket);
         }
     }
@@ -56,7 +56,7 @@ public class IOEngine extends Thread {
     public static void addClientSocket(ClientSocket clientSocket) throws IOException {
         if (clientSocket != null) {
             clientSockets.add(clientSocket);
-            ClientPacket clientPacket = new ClientPacket(-1, 0, MetaType.USER, clientSocket.getClientId(), ClientOp.CLIENT_CREATE);
+            ClientPacket clientPacket = new ClientPacket(new Header(-1, 0), clientSocket.getClientId(), ClientOp.CLIENT_CREATE);
             PacketQueue.writeIn(clientPacket);
             LogUtil.info("Socket accepted : " + clientSocket);
 

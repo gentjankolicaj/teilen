@@ -1,6 +1,6 @@
 package org.teilen.server.queue;
 
-import org.teilen.common.packet.Packet;
+import org.teilen.common.packet.base.Packet;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -46,26 +46,30 @@ public class PacketQueue {
 
 
     public static void writeOut(Map<Integer, List<Packet>> packetMap) {
-        for (Map.Entry<Integer, List<Packet>> packetEntry : packetMap.entrySet()) {
-            Integer clientId = packetEntry.getKey();
-            List<Packet> packets = packetEntry.getValue();
-            Queue<Packet> existingPackets = out.get(clientId);
-            if (existingPackets != null) {
-                existingPackets.addAll(packets);
-            } else {
-                out.put(clientId, new LinkedList<>(packets));
+        List<Packet> allClientsPackets = packetMap.get(0);
+        if (allClientsPackets != null && allClientsPackets.size() != 0) {
+            for (Map.Entry<Integer, List<Packet>> packetEntry : packetMap.entrySet()) {
+                Integer clientId = packetEntry.getKey();
+                List<Packet> clientPackets = packetEntry.getValue();
+                Queue<Packet> existingPackets = out.get(clientId);
+                if (existingPackets != null) {
+                    existingPackets.addAll(clientPackets);
+                    existingPackets.addAll(allClientsPackets);
+                } else {
+                    Queue<Packet> queue = new LinkedList<>(clientPackets);
+                    queue.addAll(allClientsPackets);
+                    out.put(clientId, queue);
+                }
             }
-        }
-    }
-
-    public static void writeOutToAllExceptOrigin(Map<Integer, Packet> allClientsPacket) {
-        for (Map.Entry<Integer, Packet> packetEntry : allClientsPacket.entrySet()) {
-            Integer clientId = packetEntry.getKey();
-            Packet packet = packetEntry.getValue();
-            for (Map.Entry<Integer, Queue<Packet>> outEntry : out.entrySet()) {
-                Integer outClientId = outEntry.getKey();
-                if (clientId.intValue() != outClientId.intValue()) {
-                    outEntry.getValue().add(packet);
+        } else {
+            for (Map.Entry<Integer, List<Packet>> packetEntry : packetMap.entrySet()) {
+                Integer clientId = packetEntry.getKey();
+                List<Packet> clientPackets = packetEntry.getValue();
+                Queue<Packet> existingPackets = out.get(clientId);
+                if (existingPackets != null) {
+                    existingPackets.addAll(clientPackets);
+                } else {
+                    out.put(clientId, new LinkedList<>(clientPackets));
                 }
             }
         }

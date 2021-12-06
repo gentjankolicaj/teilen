@@ -1,8 +1,8 @@
 package org.teilen.server.gui;
 
+import org.teilen.common.domain.Client;
 import org.teilen.common.domain.Room;
-import org.teilen.common.domain.User;
-import org.teilen.common.packet.Packet;
+import org.teilen.common.packet.base.Packet;
 import org.teilen.common.packet.meta.ClientOp;
 import org.teilen.common.packet.meta.ClientPacket;
 import org.teilen.common.packet.meta.RoomPacket;
@@ -52,18 +52,18 @@ public class ActivityPanel extends JSplitPane {
     }
 
     //Add user & validate scroll
-    private void addUser(User user) {
-        userPanel.addUser(user);
+    private void addUser(Client client) {
+        userPanel.addUser(client);
         userScrollPane.validate();
     }
 
     //remove user & validate scroll
-    private void removeUser(User user) {
-        userPanel.removeUser(user);
+    private void removeUser(Client client) {
+        userPanel.removeUser(client);
         userScrollPane.validate();
     }
 
-    public void updateMeta(List<Packet> metas) {
+    public void processGui(List<Packet> metas) {
         List<Packet> userMeta = getUserMeta(metas);
         List<Packet> roomMeta = getRoomMeta(metas);
         updateUserMeta(userMeta);
@@ -79,9 +79,9 @@ public class ActivityPanel extends JSplitPane {
             for (Packet packet : userMeta) {
                 ClientPacket clientPacket = (ClientPacket) packet;
                 if (clientPacket.getClientOp().name().equals(ClientOp.CLIENT_CREATE.name())) {
-                    userPanel.addUser(new User(clientPacket.getClientId(), "Jame", "Doe"));
+                    userPanel.addUser(new Client(clientPacket.getClientId(), "Jame", "Doe"));
                 } else if (clientPacket.getClientOp().name().equals(ClientOp.CLIENT_DELETE.name())) {
-                    userPanel.removeUser(new User(clientPacket.getClientId(), "Jame", "Doe"));
+                    userPanel.removeUser(new Client(clientPacket.getClientId(), "Jame", "Doe"));
                 }
             }
             userScrollPane.revalidate();
