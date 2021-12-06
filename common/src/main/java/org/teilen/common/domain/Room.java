@@ -1,7 +1,7 @@
 package org.teilen.common.domain;
 
 import lombok.Data;
-import org.teilen.common.packet.Packet;
+import org.teilen.common.packet.base.Packet;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,8 +11,9 @@ public class Room {
     private Integer id;
     private Integer ownerId;
     private String name;
-    private List<User> users;
-    private List<Packet> packets;
+    private static int contentCounter = 0;
+    private List<Integer> clients;
+    private List<RoomContent> contents;
 
 
     public Room(Integer id) {
@@ -30,110 +31,111 @@ public class Room {
     }
 
 
-    public Room(Integer id, User firstUser, User secondUser) {
+    public Room(Integer id, Client firstClient, Client secondClient) {
         this.id = id;
-        if (users == null) {
-            users = new ArrayList<>();
+        if (clients == null) {
+            clients = new ArrayList<>();
         }
-        users.add(firstUser);
-        users.add(secondUser);
+        clients.add(firstClient.getId());
+        clients.add(secondClient.getId());
     }
 
-    public void addUser(User newUser) {
-        if (users == null) {
-            users = new ArrayList<>();
-            users.add(newUser);
-        } else if (users.size() == 0) {
-            users.add(newUser);
+    static Integer getContentId() {
+        contentCounter++;
+        return contentCounter;
+    }
+
+    public void addClient(Client client) {
+        if (clients == null) {
+            clients = new ArrayList<>();
+            clients.add(client.getId());
+        } else if (clients.size() == 0) {
+            clients.add(client.getId());
         } else {
             boolean found = false;
-            for (int i = 0; i < users.size(); i++) {
-                User tmp = users.get(i);
-                Integer tmpUserId = tmp.getId();
-                Integer userId = newUser.getId();
-                if ((tmpUserId != null && userId != null) && (tmpUserId.intValue() == userId.intValue())) {
+            Integer newId = client.getId();
+            for (int i = 0; i < clients.size(); i++) {
+                Integer existingId = clients.get(i);
+                if ((newId != null && existingId != null) && (newId.intValue() == existingId.intValue())) {
                     found = true;
                     break;
                 }
             }
 
             if (!found) {
-                users.add(newUser);
+                clients.add(newId);
             }
         }
     }
 
-    public void updateUser(User newUser) {
-        if (users == null) {
-            users = new ArrayList<>();
-            users.add(newUser);
-        } else if (users.size() == 0) {
-            users.add(newUser);
+    public void removeClient(Client client) {
+        if (clients != null && clients.size() != 0) {
+            Integer newId = client.getId();
+            for (int i = 0; i < clients.size(); i++) {
+                Integer existingId = clients.get(i);
+                if ((newId != null && existingId != null) && (newId.intValue() == existingId.intValue())) {
+                    clients.remove(i);
+                    break;
+                }
+            }
+        }
+    }
+
+    public RoomContent findRoomContent(Integer contentId) {
+        for (int i = 0; i < contents.size(); i++) {
+            RoomContent roomContent = contents.get(i);
+            Integer actualContentId = roomContent.getId();
+            if ((contentId != null && actualContentId != null) && (contentId.intValue() == actualContentId.intValue())) {
+                return roomContent;
+            }
+        }
+        return null;
+    }
+
+    public void addRoomContent(RoomContent roomContent) {
+        if (contents == null) {
+            contents = new ArrayList<>();
+        }
+        roomContent.setId(getContentId());
+        contents.add(roomContent);
+    }
+
+    public void addRoomContent(Packet packet) {
+        if (contents == null) {
+            contents = new ArrayList<>();
+        }
+        RoomContent roomContent = new RoomContent(getContentId(), packet);
+        contents.add(roomContent);
+    }
+
+    public void removeRoomContent(Integer contentId) {
+        if (contents != null && contents.size() != 0) {
+            for (int i = 0; i < contents.size(); i++) {
+                RoomContent content = contents.get(i);
+                Integer actualContentId = content.getId();
+                if ((contentId != null && actualContentId != null) && (contentId.intValue() == actualContentId.intValue())) {
+                    contents.remove(i);
+                    break;
+                }
+            }
+        }
+    }
+
+    public void updateRoomContent(Integer contentId, Packet packet) {
+        if (contents == null) {
+            contents = new ArrayList<>();
+        } else if (contents.size() == 0) {
+            RoomContent roomContent = new RoomContent(getContentId(), packet);
+            contents.add(roomContent);
         } else {
-            for (int i = 0; i < users.size(); i++) {
-                User tmp = users.get(i);
-                Integer tmpUserId = tmp.getId();
-                Integer userId = newUser.getId();
-                if ((tmpUserId != null && userId != null) && (tmpUserId.intValue() == userId.intValue())) {
-                    users.remove(i);
-                    users.add(newUser);
-                    break;
-                }
-            }
-        }
-    }
+            for (int i = 0; i < contents.size(); i++) {
+                RoomContent roomContent = contents.get(i);
+                Integer actualContentId = roomContent.getId();
+                if ((contentId != null && actualContentId != null) && (contentId.intValue() == actualContentId.intValue())) {
+                    contents.remove(i);
 
-    public void removeUser(User newUser) {
-        if (users != null && users.size() != 0) {
-            for (int i = 0; i < users.size(); i++) {
-                User tmp = users.get(i);
-                Integer tmpUserId = tmp.getId();
-                Integer userId = newUser.getId();
-                if ((tmpUserId != null && userId != null) && (tmpUserId.intValue() == userId.intValue())) {
-                    users.remove(i);
-                    break;
-                }
-            }
-        }
-    }
-
-
-    public void addPacket(Packet packet) {
-        if (packets == null) {
-            packets = new ArrayList<>();
-        }
-        packets.add(packet);
-    }
-
-    public void removePacket(Packet newPacket) {
-        if (packets != null && packets.size() != 0) {
-            for (int i = 0; i < packets.size(); i++) {
-                Packet tmp = packets.get(i);
-                Integer tmpPacketId = tmp.getOriginId();
-                Integer packetId = newPacket.getOriginId();
-                if ((tmpPacketId != null && packetId != null) && (tmpPacketId.intValue() == packetId.intValue())) {
-                    packets.remove(i);
-                    break;
-                }
-            }
-        }
-    }
-
-
-    public void updatePacket(Packet newPacket) {
-        if (packets == null) {
-            packets = new ArrayList<>();
-            packets.add(newPacket);
-        } else if (packets.size() == 0) {
-            packets.add(newPacket);
-        } else {
-            for (int i = 0; i < packets.size(); i++) {
-                Packet tmp = packets.get(i);
-                Integer tmpPacketId = tmp.getOriginId();
-                Integer packetId = newPacket.getOriginId();
-                if ((tmpPacketId != null && packetId != null) && (tmpPacketId.intValue() == packetId.intValue())) {
-                    packets.remove(i);
-                    packets.add(newPacket);
+                    RoomContent updatedRoomContent = new RoomContent(contentId, packet);
+                    contents.add(updatedRoomContent);
                     break;
                 }
             }
