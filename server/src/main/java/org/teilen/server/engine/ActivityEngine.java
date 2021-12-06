@@ -84,7 +84,7 @@ public class ActivityEngine extends Thread {
 
     private void processPackets(List<Packet> packets) {
         Map<Integer, List<Packet>> clientPacketMap = new HashMap<>();
-        List<Packet> allClientsPackets = new ArrayList<>();
+        Map<Integer, List<Packet>> allClientPacketMap = new HashMap<>();
 
         for (int i = 0; i < packets.size(); i++) {
             Packet packet = packets.get(i);
@@ -115,16 +115,24 @@ public class ActivityEngine extends Thread {
                         // 1-n => specific user
                         //origin -1 => origin :server,
                         //destination 0 => all users
-                        Client client = new Client(clientId);
-                        ClientRepository.insertClient(client);
 
                         //Packet to be sent to specific client
                         ClientPacket uClientPacket = new ClientPacket(new Header(-1, clientId), clientPacket.getClientId(), ClientOp.CLIENT_UPDATE);
-                        updatePacketMap(clientPacketMap, clientId, uClientPacket);
+                        updateClientPacketMap(clientPacketMap, clientId, uClientPacket);
+
+                        //Packets to be sent to specific client & client to be updated with existing clients
+                        List<Packet> cClientPackets = getExistingClientPackets(clientId);
+                        updateClientPacketMap(clientPacketMap, clientId, cClientPackets);
 
                         //Packet to be sent to all clients
                         ClientPacket cClientPacket = new ClientPacket(new Header(-1, 0), clientPacket.getClientId(), ClientOp.CLIENT_CREATE);
-                        allClientsPackets.add(cClientPacket);
+                        updateAllClientPacketMap(allClientPacketMap, clientId, cClientPacket);
+
+
+                        //Finally, add new client on repository
+                        Client client = new Client(clientId);
+                        ClientRepository.insertClient(client);
+
                     } else if (clientPacket.getClientOp().name().equals(ClientOp.CLIENT_UPDATE.name())) {
                         //origin : user
                         //Destination : all users
@@ -134,13 +142,14 @@ public class ActivityEngine extends Thread {
 
                         //Packet to be sent to all clients
                         ClientPacket uClientPacket = new ClientPacket(new Header(clientId, 0), new Body(null, clientInfo), clientPacket.getClientId(), ClientOp.CLIENT_UPDATE);
-                        allClientsPackets.add(uClientPacket);
+                        updateAllClientPacketMap(allClientPacketMap, clientId, uClientPacket);
 
                     } else if (clientPacket.getClientOp().name().equals(ClientOp.CLIENT_DELETE.name())) {
                         //origin : server
                         //Destination : all users
+                        ClientRepository.deleteClient(clientId);
                         ClientPacket dClientPacket = new ClientPacket(new Header(-1, 0), clientId, ClientOp.CLIENT_DELETE);
-                        allClientsPackets.add(dClientPacket);
+                        updateAllClientPacketMap(allClientPacketMap, clientId, dClientPacket);
                     }
                 }
 
@@ -148,11 +157,24 @@ public class ActivityEngine extends Thread {
 
         }
 
-        Map<Integer, List<Packet>> processedMap = getProcessedMap(clientPacketMap, allClientsPackets);
+        Map<Integer, List<Packet>> processedMap = getProcessedMap(clientPacketMap, allClientPacketMap);
         PacketQueue.writeOut(processedMap);
     }
 
-    private void updatePacketMap(Map<Integer, List<Packet>> packetMap, Integer clientId, Packet packet) {
+    private List<Packet> getExistingClientPackets(Integer clientId) {
+        Map<Integer, Client> clients = ClientRepository.findAll();
+        if (clients != null && clients.size() != 0) {
+            List<Packet> clientPackets = new ArrayList<>();
+            for (Map.Entry<Integer, Client> clientEntry : clients.entrySet()) {
+                clientPackets.add(new ClientPacket(new Header(-1, clientId), clientEntry.getKey(), ClientOp.CLIENT_CREATE));
+            }
+            return clientPackets;
+        } else {
+            return null;
+        }
+    }
+
+    private void updateClientPacketMap(Map<Integer, List<Packet>> packetMap, Integer clientId, Packet packet) {
         List<Packet> clientPackets = packetMap.get(clientId);
         if (clientPackets == null) {
             clientPackets = new ArrayList<>();
@@ -163,10 +185,71 @@ public class ActivityEngine extends Thread {
         }
     }
 
-    private Map<Integer, List<Packet>> getProcessedMap(Map<Integer, List<Packet>> oneClientPacketMap, List<Packet> allClientsPackets) {
-        Map<Integer, List<Packet>> processedMap = new HashMap<>();
+    private void updateClientPacketMap(Map<Integer, List<Packet>> packetMap, Integer clientId, List<Packet> packets) {
+        if (packets != null) {
+            List<Packet> clientPackets = packetMap.get(clientId);
+            if (clientPackets == null) {
+                packetMap.put(clientId, packets);
+            } else {
+                clientPackets.addAll(packets);
+            }
+        }
+    }
 
+    private void updateAllClientPacketMap(Map<Integer, List<Packet>> packetMap, Integer clientId, Packet packet) {
+        List<Packet> nonClientPackets = packetMap.get(clientId);
+        if (nonClientPackets == null) {
+            nonClientPackets = new ArrayList<>();
+            nonClientPackets.add(packet);
+            packetMap.put(clientId, nonClientPackets);
+        } else {
+            nonClientPackets.add(packet);
+        }
+    }
+
+    private Map<Integer, List<Packet>> getProcessedMap(Map<Integer, List<Packet>> specificClientPacketMap, Map<Integer, List<Packet>> allClientPacketMap) {
+        Map<Integer, List<Packet>> processedMap = new HashMap<>();
+        Map<Integer, Client> clients = ClientRepository.findAll();
+        if (clients != null) {
+            //Sent to all clients but expel only client with same id
+            for (Map.Entry<Integer, Client> clientEntry : clients.entrySet()) {
+                Integer clientId = clientEntry.getKey();
+                for (Map.Entry<Integer, List<Packet>> packetEntry : allClientPacketMap.entrySet()) {
+                    Integer nonClientId = packetEntry.getKey();
+                    List<Packet> nonClientPackets = packetEntry.getValue();
+                    if ((clientId != null && nonClientId != null) && (clientId.intValue() != nonClientId.intValue())) {
+                        updateProcessedMap(processedMap, clientId, nonClientPackets);
+                    }
+                }
+            }
+
+            //Sent to clients with same id
+            for (Map.Entry<Integer, List<Packet>> specificEntry : specificClientPacketMap.entrySet()) {
+                Integer clientId = specificEntry.getKey();
+                List<Packet> clientPackets = specificEntry.getValue();
+                boolean notFound = true;
+                for (Map.Entry<Integer, List<Packet>> processedEntry : processedMap.entrySet()) {
+                    Integer currentClientId = processedEntry.getKey();
+                    if ((clientId != null && currentClientId != null) && (clientId.intValue() == currentClientId.intValue())) {
+                        updateProcessedMap(processedMap, clientId, clientPackets);
+                        notFound = false;
+                    }
+                }
+                if (notFound) {
+                    processedMap.put(clientId, clientPackets);
+                }
+            }
+        }
         return processedMap;
+    }
+
+    private void updateProcessedMap(Map<Integer, List<Packet>> processedMap, Integer clientId, List<Packet> newPackets) {
+        List<Packet> packets = processedMap.get(clientId);
+        if (packets == null) {
+            processedMap.put(clientId, newPackets);
+        } else {
+            packets.addAll(newPackets);
+        }
     }
 
 
