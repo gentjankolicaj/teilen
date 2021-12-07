@@ -81,6 +81,32 @@ public class UserPanel extends JList<String> {
         }
     }
 
+    public void updateClient(Client client) {
+        if (clients != null && clients.size() != 0) {
+            boolean found = false;
+            int removeIndex = -1;
+            for (int i = 0; i < clients.size(); i++) {
+                Client tmp = clients.get(i);
+                Integer tmpUserId = tmp.getId();
+                Integer userId = client.getId();
+                if ((tmpUserId != null && userId != null) && (tmpUserId.intValue() == userId.intValue())) {
+                    found = true;
+                    removeIndex = i;
+                    break;
+                }
+            }
+            if (found) {
+                clients.remove(removeIndex);
+                userModelList.remove(removeIndex);
+
+                int addIndex = clients.size(); //because is total number and index start from 0
+                clients.add(client);
+                String username = getUsername(client);
+                userModelList.add(addIndex, username);
+            }
+        }
+    }
+
     public void removeAllClients() {
         if (clients != null && clients.size() != 0) {
             clients.removeAll(clients);

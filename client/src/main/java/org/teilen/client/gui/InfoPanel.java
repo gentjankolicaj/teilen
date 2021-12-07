@@ -3,8 +3,12 @@ package org.teilen.client.gui;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.teilen.client.domain.SocketMeta;
 import org.teilen.client.engine.IOEngine;
+import org.teilen.client.queue.PacketQueue;
 import org.teilen.client.util.LogUtil;
+import org.teilen.common.packet.base.Body;
+import org.teilen.common.packet.base.Header;
 import org.teilen.common.packet.base.Packet;
+import org.teilen.common.packet.info.ClientInfo;
 import org.teilen.common.packet.meta.ClientOp;
 import org.teilen.common.packet.meta.ClientPacket;
 
@@ -13,6 +17,8 @@ import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.util.List;
 
 public class InfoPanel extends JPanel {
@@ -31,6 +37,8 @@ public class InfoPanel extends JPanel {
     private final JButton connectBtn;
     private final JButton disconnectBtn;
     private final IOEngine ioEngine;
+
+    private Integer clientId;
 
     public InfoPanel(IOEngine ioEngine) {
         this.ioEngine = ioEngine;
@@ -89,7 +97,7 @@ public class InfoPanel extends JPanel {
         JLabel userIdLbl = new JLabel("ID :");
         userInfoPanel.add(userIdLbl);
 
-        userId = new JLabel("       ");
+        userId = new JLabel("");
         userInfoPanel.add(userId);
 
         Component horizontalStrut_2 = Box.createHorizontalStrut(20);
@@ -99,8 +107,9 @@ public class InfoPanel extends JPanel {
         userInfoPanel.add(userLbl);
 
         usernameTF = new JTextField();
-        usernameTF.setText("john doe");
+        usernameTF.setText("");
         usernameTF.setColumns(13);
+        usernameTF.setEditable(false);
         userInfoPanel.add(usernameTF);
         userInfoPanel.add(horizontalStrut_2);
 
@@ -112,6 +121,7 @@ public class InfoPanel extends JPanel {
         userInfoPanel.add(dirTF);
         dirTF.setColumns(13);
         userInfoPanel.add(horizontalStrut_2);
+
 
 
         //Software & hardware info panel
@@ -181,7 +191,6 @@ public class InfoPanel extends JPanel {
                 int port = getPort();
                 String host = getHost();
                 String username = getUsername();
-
                 LogUtil.info("Connect button pressed.");
                 try {
                     ioEngine.connect(new SocketMeta(host, port, timeout, username));
@@ -198,13 +207,33 @@ public class InfoPanel extends JPanel {
                 LogUtil.info("Disconnect button pressed.");
                 try {
                     ioEngine.disconnect();
-                    removeExistingUserId();
+                    fixIdAndUname();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         });
 
+
+        //After focus is lost on text field put new username string out queue
+        this.usernameTF.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusLost(final FocusEvent evt) {
+                String username = usernameTF.getText();
+                if (username != null && username.length() != 0) {
+                    String firstname = getFirstname(username);
+                    String lastname = getLastname(username);
+                    ClientPacket clientPacket = new ClientPacket(new Header(clientId, 0), new Body(null, new ClientInfo(firstname, lastname)), clientId, ClientOp.CLIENT_UPDATE);
+                    PacketQueue.writeOut(clientPacket);
+                }
+            }
+        });
+
+    }
+
+    private void fixIdAndUname() {
+        removeExistingUserId();
+        usernameTF.setEditable(false);
     }
 
     private int getTimeout() {
@@ -235,8 +264,34 @@ public class InfoPanel extends JPanel {
 
     public void setClientId(Integer clientId) {
         if (clientId != null && userId != null) {
-            userId.setText(clientId.toString());
+            this.clientId = clientId;
+            userId.setText(this.clientId.toString());
+            usernameTF.setEditable(true);
         }
+    }
+
+    public String getFirstname(String username) {
+        if (username != null && username.length() != 0) {
+            username = username.trim();
+            int emptySpaceIndex = username.indexOf(" ");
+            if (emptySpaceIndex > 0) {
+                return username.substring(0, emptySpaceIndex);
+            } else
+                return username;
+        } else
+            return null;
+    }
+
+    public String getLastname(String username) {
+        if (username != null && username.length() != 0) {
+            username = username.trim();
+            int emptySpaceIndex = username.indexOf(" ");
+            if (emptySpaceIndex > 0) {
+                return username.substring(emptySpaceIndex + 1);
+            } else
+                return "";
+        } else
+            return null;
     }
 
 
@@ -251,8 +306,12 @@ public class InfoPanel extends JPanel {
                 if (packet instanceof ClientPacket) {
                     ClientPacket clientPacket = (ClientPacket) packet;
                     if (clientPacket.getClientOp().name().equals(ClientOp.CLIENT_UPDATE.name())) {
-                        Integer clientId = clientPacket.getClientId();
-                        this.setClientId(clientId);
+                        //Packets with origin id -1 come from server and server assigns ids to clients
+                        Integer originId = clientPacket.getHeader().getOriginId();
+                        if (originId != null && originId.intValue() == -1) {
+                            Integer clientId = clientPacket.getClientId();
+                            this.setClientId(clientId);
+                        }
 
                     }
                 }

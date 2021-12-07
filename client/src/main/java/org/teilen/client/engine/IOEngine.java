@@ -81,12 +81,12 @@ public class IOEngine implements Runnable {
                                 packets.add(packet);
                                 System.out.println("Client : received from server " + packet + ", client-response " + firstResponse);
                             }
-                            PacketQueue.ioWriteIn(packets);
+                            PacketQueue.writeIn(packets);
                         }
 
 
                         //Sending from client to server
-                        List<Packet> clientPackets = PacketQueue.ioReadOut(packetNumber);
+                        List<Packet> clientPackets = PacketQueue.readOut(packetNumber);
                         System.out.println("Client : packets " + clientPackets);
                         int clientPacketsNr = clientPackets != null ? clientPackets.size() : 0;
                         Request secondRequest = new Request(0, clientPacketsNr);
@@ -161,7 +161,7 @@ public class IOEngine implements Runnable {
                 this.socketWrapper = new SocketWrapper(socket);
                 this.connected = true;
                 LogUtil.info("Socket connected : " + this.socketWrapper);
-                PacketQueue.ioWriteIn(new ConnPacket(ConnOp.ON));
+                PacketQueue.writeIn(new ConnPacket(ConnOp.ON));
             }
 
     }
@@ -171,7 +171,7 @@ public class IOEngine implements Runnable {
                 this.socketWrapper.close();
                 this.connected = false;
                 LogUtil.info("Socket disconnected : " + this.socketWrapper);
-                PacketQueue.ioWriteIn(new ConnPacket(ConnOp.OFF));
+                PacketQueue.writeIn(new ConnPacket(ConnOp.OFF));
             }
     }
 

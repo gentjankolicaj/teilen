@@ -3,7 +3,9 @@ package org.teilen.client.gui;
 import org.teilen.client.global.GlobalConfig;
 import org.teilen.client.util.LogUtil;
 import org.teilen.common.domain.Client;
+import org.teilen.common.packet.base.Body;
 import org.teilen.common.packet.base.Packet;
+import org.teilen.common.packet.info.ClientInfo;
 import org.teilen.common.packet.meta.ClientOp;
 import org.teilen.common.packet.meta.ClientPacket;
 import org.teilen.common.packet.meta.ConnOp;
@@ -61,9 +63,15 @@ public class ActivityPanel extends JPanel {
             for (Packet packet : userMeta) {
                 ClientPacket clientPacket = (ClientPacket) packet;
                 if (clientPacket.getClientOp().name().equals(ClientOp.CLIENT_CREATE.name())) {
-                    userPanel.addClient(new Client(clientPacket.getClientId(), "Jame", "Doe"));
+                    userPanel.addClient(new Client(clientPacket.getClientId(), "~ ", "~ "));
+                } else if (clientPacket.getClientOp().name().equals(ClientOp.CLIENT_UPDATE.name())) {
+                    Body body = clientPacket.getBody();
+                    if (body != null) {
+                        ClientInfo clientInfo = (ClientInfo) body.getContent();
+                        userPanel.updateClient(new Client(clientPacket.getClientId(), clientInfo.getFirstname(), clientInfo.getLastname()));
+                    }
                 } else if (clientPacket.getClientOp().name().equals(ClientOp.CLIENT_DELETE.name())) {
-                    userPanel.removeClient(new Client(clientPacket.getClientId(), "Jame", "Doe"));
+                    userPanel.removeClient(new Client(clientPacket.getClientId(), "~ ", "~ "));
                 }
             }
             connPanel.userScrollPane.validate();

@@ -37,7 +37,7 @@ public class ActivityEngine implements Runnable {
         while (true) {
             try {
                 if (activityPanel != null) {
-                    List<Packet> packets = PacketQueue.activityReadIn(packetNumber);
+                    List<Packet> packets = PacketQueue.readIn(packetNumber);
                     if (packets != null && packets.size() != 0) {
                         //process in-queue packets and put them into out-queue
                         processPackets(packets);
@@ -89,7 +89,7 @@ public class ActivityEngine implements Runnable {
                 }
             }
         }
-        PacketQueue.activityWriteOut(processedPackets);
+        PacketQueue.writeOut(processedPackets);
     }
 
 

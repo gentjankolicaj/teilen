@@ -15,13 +15,16 @@ public class PacketQueue {
     }
 
 
-    public static Packet ioReadOut() {
+    //=================================================
+    //R-W out queue
+
+    public static Packet readOut() {
         synchronized (out) {
             return out.poll();
         }
     }
 
-    public static List<Packet> ioReadOut(int packetNumber) {
+    public static List<Packet> readOut(int packetNumber) {
         synchronized (out) {
             int queueSize = out.size();
             if (queueSize == 0)
@@ -50,14 +53,37 @@ public class PacketQueue {
         }
     }
 
+    public static void writeOut(Packet... packets) {
+        if (packets != null) {
+            synchronized (out) {
+                for (int i = 0; i < packets.length; i++) {
+                    out.add(packets[i]);
+                }
+            }
+        }
+    }
 
-    public static boolean ioWriteIn(Packet packet) {
+    public static void writeOut(List<Packet> packets) {
+        if (packets != null && packets.size() != 0) {
+            synchronized (out) {
+                for (int i = 0; i < packets.size(); i++) {
+                    out.add(packets.get(i));
+                }
+            }
+        }
+    }
+
+
+    //=================================================
+    //R-W in queue
+
+    public static boolean writeIn(Packet packet) {
         synchronized (in) {
             return in.add(packet);
         }
     }
 
-    public static void ioWriteIn(Packet... packets) {
+    public static void writeIn(Packet... packets) {
         if (packets != null && packets.length != 0) {
             synchronized (in) {
                 for (int i = 0; i < packets.length; i++) {
@@ -67,7 +93,7 @@ public class PacketQueue {
         }
     }
 
-    public static void ioWriteIn(List<Packet> packets) {
+    public static void writeIn(List<Packet> packets) {
         if (packets != null && packets.size() != 0) {
             synchronized (in) {
                 for (int i = 0; i < packets.size(); i++) {
@@ -78,27 +104,7 @@ public class PacketQueue {
     }
 
 
-    public static void activityWriteOut(Packet... packets) {
-        if (packets != null) {
-            synchronized (out) {
-                for (int i = 0; i < packets.length; i++) {
-                    out.add(packets[i]);
-                }
-            }
-        }
-    }
-
-    public static void activityWriteOut(List<Packet> packets) {
-        if (packets != null && packets.size() != 0) {
-            synchronized (out) {
-                for (int i = 0; i < packets.size(); i++) {
-                    out.add(packets.get(i));
-                }
-            }
-        }
-    }
-
-    public static List<Packet> activityReadIn(int packetNumber) {
+    public static List<Packet> readIn(int packetNumber) {
         synchronized (in) {
             int queueSize = in.size();
             if (queueSize == 0)

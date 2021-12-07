@@ -2,7 +2,9 @@ package org.teilen.server.gui;
 
 import org.teilen.common.domain.Client;
 import org.teilen.common.domain.Room;
+import org.teilen.common.packet.base.Body;
 import org.teilen.common.packet.base.Packet;
+import org.teilen.common.packet.info.ClientInfo;
 import org.teilen.common.packet.meta.ClientOp;
 import org.teilen.common.packet.meta.ClientPacket;
 import org.teilen.common.packet.meta.RoomPacket;
@@ -54,17 +56,6 @@ public class ActivityPanel extends JSplitPane {
         roomScrollPane.validate();
     }
 
-    //Add user & validate scroll
-    private void addUser(Client client) {
-        userPanel.addUser(client);
-        userScrollPane.validate();
-    }
-
-    //remove user & validate scroll
-    private void removeUser(Client client) {
-        userPanel.removeUser(client);
-        userScrollPane.validate();
-    }
 
     public void processGui(List<Packet> metas) {
         List<Packet> userMeta = getUserMeta(metas);
@@ -82,13 +73,19 @@ public class ActivityPanel extends JSplitPane {
             for (Packet packet : userMeta) {
                 ClientPacket clientPacket = (ClientPacket) packet;
                 if (clientPacket.getClientOp().name().equals(ClientOp.CLIENT_CREATE.name())) {
-                    userPanel.addUser(new Client(clientPacket.getClientId(), "Jame", "Doe"));
+                    userPanel.addClient(new Client(clientPacket.getClientId(), "~ ", "~ "));
+                } else if (clientPacket.getClientOp().name().equals(ClientOp.CLIENT_UPDATE.name())) {
+                    Body body = clientPacket.getBody();
+                    if (body != null) {
+                        ClientInfo clientInfo = (ClientInfo) body.getContent();
+                        userPanel.updateClient(new Client(clientPacket.getClientId(), clientInfo.getFirstname(), clientInfo.getLastname()));
+                    }
                 } else if (clientPacket.getClientOp().name().equals(ClientOp.CLIENT_DELETE.name())) {
-                    userPanel.removeUser(new Client(clientPacket.getClientId(), "Jame", "Doe"));
+                    userPanel.removeClient(new Client(clientPacket.getClientId(), "~ ", "~ "));
                 }
             }
-            userScrollPane.revalidate();
-            LogUtil.info("User-Panel packets : " + userMeta);
+            userScrollPane.validate();
+            LogUtil.info("UserPanel packets : " + userMeta);
         }
     }
 
