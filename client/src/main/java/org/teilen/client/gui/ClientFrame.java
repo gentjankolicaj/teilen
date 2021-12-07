@@ -43,6 +43,7 @@ public class ClientFrame extends JFrame {
 
 		//Set panels to be used by activity engine
 		activityEngine.setActivityPanel(activityPanel);
+		activityEngine.setInfoPanel(infoPanel);
 	}
 
 }

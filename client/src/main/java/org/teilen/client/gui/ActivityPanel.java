@@ -31,11 +31,11 @@ public class ActivityPanel extends JPanel {
     }
 
 
-    public void processGui(List<Packet> metas) {
-        List<Packet> userMeta = getUserMeta(metas);
-        List<Packet> connMeta = getConnMeta(metas);
+    public void processGui(List<Packet> packets) {
+        List<Packet> clientMeta = getClientMeta(packets);
+        List<Packet> connMeta = getConnMeta(packets);
         updateConnMeta(connMeta);
-        updateUserMeta(userMeta);
+        updateClientMeta(clientMeta);
     }
 
     private void updateConnMeta(List<Packet> connMeta) {
@@ -55,7 +55,7 @@ public class ActivityPanel extends JPanel {
     }
 
 
-    private void updateUserMeta(List<Packet> userMeta) {
+    private void updateClientMeta(List<Packet> userMeta) {
         if (userMeta != null) {
             UserPanel userPanel = connPanel.userPanel;
             for (Packet packet : userMeta) {
@@ -67,11 +67,11 @@ public class ActivityPanel extends JPanel {
                 }
             }
             connPanel.userScrollPane.validate();
-            LogUtil.info("User-Panel packets : " + userMeta);
+            LogUtil.info("UserPanel packets : " + userMeta);
         }
     }
 
-    private List<Packet> getUserMeta(List<Packet> metas) {
+    private List<Packet> getClientMeta(List<Packet> metas) {
         if (metas == null || metas.size() == 0)
             return null;
         else {

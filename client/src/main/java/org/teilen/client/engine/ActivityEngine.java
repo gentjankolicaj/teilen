@@ -1,6 +1,7 @@
 package org.teilen.client.engine;
 
 import org.teilen.client.gui.ActivityPanel;
+import org.teilen.client.gui.InfoPanel;
 import org.teilen.client.queue.PacketQueue;
 import org.teilen.common.packet.base.Packet;
 import org.teilen.common.packet.media.*;
@@ -15,13 +16,20 @@ import java.util.List;
 public class ActivityEngine implements Runnable {
     private static final int threadSleep = 200; //millis
     private static final int packetNumber = 5;
+
+    //Panels to
     private ActivityPanel activityPanel;
+    private InfoPanel infoPanel;
 
     public ActivityEngine() {
     }
 
     public void setActivityPanel(ActivityPanel activityPanel) {
         this.activityPanel = activityPanel;
+    }
+
+    public void setInfoPanel(InfoPanel infoPanel) {
+        this.infoPanel = infoPanel;
     }
 
     @Override
@@ -36,6 +44,7 @@ public class ActivityEngine implements Runnable {
 
                         //Process changes at gui
                         activityPanel.processGui(packets);
+                        infoPanel.processGui(packets);
                     }
                 } else {
                     long otherSleep = (long) (threadSleep - (threadSleep * 0.9));
@@ -82,5 +91,6 @@ public class ActivityEngine implements Runnable {
         }
         PacketQueue.activityWriteOut(processedPackets);
     }
+
 
 }

@@ -4,12 +4,16 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.teilen.client.domain.SocketMeta;
 import org.teilen.client.engine.IOEngine;
 import org.teilen.client.util.LogUtil;
+import org.teilen.common.packet.base.Packet;
+import org.teilen.common.packet.meta.ClientOp;
+import org.teilen.common.packet.meta.ClientPacket;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.List;
 
 public class InfoPanel extends JPanel {
     private final JPanel buttonPanel;
@@ -22,6 +26,7 @@ public class InfoPanel extends JPanel {
 
     private final JTextField usernameTF;
     private final JTextField dirTF;
+    private final JLabel userId;
 
     private final JButton connectBtn;
     private final JButton disconnectBtn;
@@ -44,8 +49,8 @@ public class InfoPanel extends JPanel {
         buttonPanel.add(hostTF);
         hostTF.setColumns(13);
 
-        Component horizontalStrut_6 = Box.createHorizontalStrut(10);
-        buttonPanel.add(horizontalStrut_6);
+        Component horizontalStrut_1 = Box.createHorizontalStrut(10);
+        buttonPanel.add(horizontalStrut_1);
 
         JLabel portLbl = new JLabel("Port :");
         buttonPanel.add(portLbl);
@@ -54,9 +59,7 @@ public class InfoPanel extends JPanel {
         portTF.setText("8888");
         buttonPanel.add(portTF);
         portTF.setColumns(10);
-
-        Component horizontalStrut_7 = Box.createHorizontalStrut(10);
-        buttonPanel.add(horizontalStrut_7);
+        buttonPanel.add(horizontalStrut_1);
 
         JLabel timeoutLbl = new JLabel("Timeout(millis) : ");
         buttonPanel.add(timeoutLbl);
@@ -66,8 +69,7 @@ public class InfoPanel extends JPanel {
         buttonPanel.add(timeoutTF);
         timeoutTF.setColumns(10);
 
-        Component horizontalStrut_8 = Box.createHorizontalStrut(10);
-        buttonPanel.add(horizontalStrut_8);
+        buttonPanel.add(horizontalStrut_1);
 
         JLabel iconStatusLbl = new JLabel("");
         buttonPanel.add(iconStatusLbl);
@@ -84,34 +86,32 @@ public class InfoPanel extends JPanel {
         add(userInfoPanel, BorderLayout.CENTER);
         userInfoPanel.setLayout(new FlowLayout(FlowLayout.LEADING, 5, 5));
 
-        JLabel userIdLbl = new JLabel("ID : ");
+        JLabel userIdLbl = new JLabel("ID :");
         userInfoPanel.add(userIdLbl);
 
-        JLabel userId = new JLabel("       ");
+        userId = new JLabel("       ");
         userInfoPanel.add(userId);
 
-        Component horizontalStrut_1 = Box.createHorizontalStrut(20);
-        userInfoPanel.add(horizontalStrut_1);
+        Component horizontalStrut_2 = Box.createHorizontalStrut(20);
+        userInfoPanel.add(horizontalStrut_2);
 
-        JLabel userLbl = new JLabel("Username : ");
+        JLabel userLbl = new JLabel("  Uname :");
         userInfoPanel.add(userLbl);
 
         usernameTF = new JTextField();
         usernameTF.setText("john doe");
-        userInfoPanel.add(usernameTF);
         usernameTF.setColumns(13);
+        userInfoPanel.add(usernameTF);
+        userInfoPanel.add(horizontalStrut_2);
 
-        userInfoPanel.add(horizontalStrut_1);
-
-        JLabel userDirLbl = new JLabel("Dir : ");
+        JLabel userDirLbl = new JLabel("  Dir :");
         userInfoPanel.add(userDirLbl);
 
         dirTF = new JTextField();
         dirTF.setText("/home/");
         userInfoPanel.add(dirTF);
         dirTF.setColumns(13);
-
-        userInfoPanel.add(horizontalStrut_1);
+        userInfoPanel.add(horizontalStrut_2);
 
 
         //Software & hardware info panel
@@ -198,6 +198,7 @@ public class InfoPanel extends JPanel {
                 LogUtil.info("Disconnect button pressed.");
                 try {
                     ioEngine.disconnect();
+                    removeExistingUserId();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -225,4 +226,40 @@ public class InfoPanel extends JPanel {
         String hostStr = this.usernameTF.getText();
         return hostStr;
     }
+
+    private void removeExistingUserId() {
+        if (userId != null) {
+            userId.setText("");
+        }
+    }
+
+    public void setClientId(Integer clientId) {
+        if (clientId != null && userId != null) {
+            userId.setText(clientId.toString());
+        }
+    }
+
+
+    public void processGui(List<Packet> packets) {
+        updateInfoMeta(packets);
+    }
+
+
+    private void updateInfoMeta(List<Packet> packets) {
+        if (packets != null) {
+            for (Packet packet : packets) {
+                if (packet instanceof ClientPacket) {
+                    ClientPacket clientPacket = (ClientPacket) packet;
+                    if (clientPacket.getClientOp().name().equals(ClientOp.CLIENT_UPDATE.name())) {
+                        Integer clientId = clientPacket.getClientId();
+                        this.setClientId(clientId);
+
+                    }
+                }
+            }
+            LogUtil.info("InfoPanel packets : " + packets);
+        }
+    }
+
+
 }
