@@ -14,7 +14,8 @@ public class UserPanel extends JList<String> {
 
     public UserPanel() {
         super(userModelList);
-        this.setCellRenderer(new UserIconRenderer());
+        this.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        this.setCellRenderer(new ClientIconRenderer());
     }
 
     public static ImageIcon getUserImageIcon() {
@@ -114,7 +115,12 @@ public class UserPanel extends JList<String> {
         }
     }
 
-    class UserIconRenderer extends DefaultListCellRenderer {
+    public Integer getClientId(int selectedIndex) {
+        return clients.get(selectedIndex).getId();
+    }
+
+
+    class ClientIconRenderer extends DefaultListCellRenderer {
         Font font = new Font("helvitica", Font.BOLD, 13);
 
         @Override

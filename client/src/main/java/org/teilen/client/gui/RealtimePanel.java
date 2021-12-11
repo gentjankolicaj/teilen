@@ -1,19 +1,31 @@
 package org.teilen.client.gui;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 
-public class ConnPanel extends JPanel {
+public class RealtimePanel extends JPanel {
+    //parent panel
+    final ActivityPanel activityPanel;
+
+
     final JScrollPane userScrollPane;
     final UserPanel userPanel;
+    final ListSelectionModel userSelectionModel;
 
-    JLabel serverImage;
+    //server image
+    private JLabel serverImage;
 
-    public ConnPanel() {
-        this.setLayout(new BorderLayout());
+    public RealtimePanel(ActivityPanel activityPanel) {
+        this.activityPanel = activityPanel;
+        this.setLayout(new BorderLayout(0, 0));
         this.setServerImageRed();
 
         this.userPanel = new UserPanel();
+        this.userSelectionModel = userPanel.getSelectionModel();
+        this.userSelectionModel.addListSelectionListener(new SingleListSelectionHandler());
+
         this.userScrollPane = new JScrollPane(userPanel, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
                 JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 
@@ -51,4 +63,23 @@ public class ConnPanel extends JPanel {
         this.validate();
     }
 
+    class SingleListSelectionHandler implements ListSelectionListener {
+        public void valueChanged(ListSelectionEvent e) {
+            ListSelectionModel lsm = (ListSelectionModel) e.getSource();
+            // Find out which indexes are selected.
+            int minIndex = lsm.getMinSelectionIndex();
+            int maxIndex = lsm.getMaxSelectionIndex();
+            int selectedIndex = minIndex;
+            for (int i = minIndex; i <= maxIndex; i++) {
+                if (lsm.isSelectedIndex(i)) {
+                    selectedIndex = i;
+                    break;
+                }
+            }
+            Integer clientId = userPanel.getClientId(selectedIndex);
+            activityPanel.openRoomWithClient(clientId);
+        }
+    }
+
 }
+

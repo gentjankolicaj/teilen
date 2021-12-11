@@ -12,24 +12,33 @@ import org.teilen.common.packet.meta.ConnOp;
 import org.teilen.common.packet.meta.ConnPacket;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ActivityPanel extends JPanel {
-    private final ConnPanel connPanel;
-    private final RoomPanel roomPanel;
+    private final RealtimePanel realtimePanel;
+    private RoomPanel roomPanel;
 
     public ActivityPanel() {
         this.setPreferredSize(new Dimension(GlobalConfig.width, (int) (GlobalConfig.height * 0.55)));
-        this.setBorder(new EmptyBorder(5, 5, 5, 5));
+        this.setBorder(new LineBorder(new Color(0, 0, 0)));
         this.setLayout(new BorderLayout(0, 0));
-        this.connPanel = new ConnPanel();
-        this.add(connPanel, BorderLayout.WEST);
+        this.realtimePanel = new RealtimePanel(this);
+        this.add(realtimePanel, BorderLayout.WEST);
 
         this.roomPanel = new RoomPanel();
         this.add(roomPanel, BorderLayout.CENTER);
+    }
+
+
+    public void openRoomWithClient(Integer clientId) {
+        RoomPanel newRoomPanel = new RoomPanel(clientId);
+        this.remove(roomPanel);
+        this.roomPanel = newRoomPanel;
+        this.add(roomPanel, BorderLayout.CENTER);
+        this.validate();
     }
 
 
@@ -45,11 +54,11 @@ public class ActivityPanel extends JPanel {
             Packet lastConnPacket = connMeta.get(connMeta.size() - 1);
             ConnPacket connPacket = (ConnPacket) lastConnPacket;
             if (connPacket.connOp.name().equals(ConnOp.ON.name())) {
-                connPanel.setServerImageGreen();
+                realtimePanel.setServerImageGreen();
             } else if (connPacket.connOp.name().equals(ConnOp.OFF.name())) {
-                connPanel.setServerImageRed();
-                connPanel.userPanel.removeAllClients();
-                connPanel.userScrollPane.validate();
+                realtimePanel.setServerImageRed();
+                realtimePanel.userPanel.removeAllClients();
+                realtimePanel.userScrollPane.validate();
             } else {
                 //do other actions based on impl
             }
@@ -59,7 +68,7 @@ public class ActivityPanel extends JPanel {
 
     private void updateClientMeta(List<Packet> userMeta) {
         if (userMeta != null) {
-            UserPanel userPanel = connPanel.userPanel;
+            UserPanel userPanel = realtimePanel.userPanel;
             for (Packet packet : userMeta) {
                 ClientPacket clientPacket = (ClientPacket) packet;
                 if (clientPacket.getClientOp().name().equals(ClientOp.CLIENT_CREATE.name())) {
@@ -74,7 +83,7 @@ public class ActivityPanel extends JPanel {
                     userPanel.removeClient(new Client(clientPacket.getClientId(), "~ ", "~ "));
                 }
             }
-            connPanel.userScrollPane.validate();
+            realtimePanel.userScrollPane.validate();
             LogUtil.info("UserPanel packets : " + userMeta);
         }
     }
