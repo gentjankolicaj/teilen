@@ -162,11 +162,13 @@ public class ActivityEngine extends Thread {
     }
 
     private List<Packet> getExistingClientPackets(Integer clientId) {
-        Map<Integer, Client> clients = ClientRepository.findAll();
+        List<Client> clients = ClientRepository.findAllList();
         if (clients != null && clients.size() != 0) {
             List<Packet> clientPackets = new ArrayList<>();
-            for (Map.Entry<Integer, Client> clientEntry : clients.entrySet()) {
-                clientPackets.add(new ClientPacket(new Header(-1, clientId), clientEntry.getKey(), ClientOp.CLIENT_CREATE));
+            for (int i = 0; i < clients.size(); i++) {
+                Client existingClient = clients.get(i);
+                ClientPacket clientPacket = new ClientPacket(new Header(-1, clientId), new Body(null, new ClientInfo(existingClient.getFirstname(), existingClient.getLastname())), existingClient.getId(), ClientOp.CLIENT_CREATE);
+                clientPackets.add(clientPacket);
             }
             return clientPackets;
         } else {

@@ -3,7 +3,9 @@ package org.teilen.server.repository;
 import org.teilen.common.domain.Client;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class ClientRepository {
 
@@ -11,6 +13,10 @@ public class ClientRepository {
 
     public static Map<Integer, Client> findAll() {
         return clients;
+    }
+
+    public static List<Client> findAllList() {
+        return clients.entrySet().stream().map(entry -> entry.getValue()).collect(Collectors.toList());
     }
 
     public static Client findClientById(Integer clientId) {

@@ -104,7 +104,18 @@ public class ActivityEngine implements Runnable {
                     ClientPacket clientPacket = (ClientPacket) packet;
                     guiPanelSet.add(GuiPanel.ACTIVITY);
                     if (clientPacket.getClientOp().name().equals(ClientOp.CLIENT_CREATE.name())) {
-                        ClientRepository.insertClient(new Client(clientPacket.getClientId(), "~ ", "~ "));
+                        Body body = clientPacket.getBody();
+                        Header header = clientPacket.getHeader();
+                        if (header != null) {
+                            if (body != null) {
+                                ClientInfo clientInfo = (ClientInfo) body.getContent();
+                                ClientRepository.insertClient(new Client(clientPacket.getClientId(), clientInfo.getFirstname(), clientInfo.getLastname()));
+                            } else {
+                                ClientRepository.insertClient(new Client(clientPacket.getClientId(), "~ ", "~ "));
+                            }
+                        } else {
+                            //to be decided if no header
+                        }
                     } else if (clientPacket.getClientOp().name().equals(ClientOp.CLIENT_UPDATE.name())) {
                         Body body = clientPacket.getBody();
                         Header header = clientPacket.getHeader();
