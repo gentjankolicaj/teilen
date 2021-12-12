@@ -143,6 +143,7 @@ public class ActivityEngine implements Runnable {
                 }
             }
         }
+
         PacketQueue.writeOut(processedPackets);
         return guiPanelSet;
     }

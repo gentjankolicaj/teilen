@@ -10,14 +10,26 @@ Desktop communication application with sockets.It also has messaging, file trans
 <artifactId>webcam-capture</artifactId>
 <version>0.3.12</version>
 
-# Client screenshots :
+# Client :
 
 ![](img/client_1.png)
 
-# Server screenshots :
+![](img/client_1.png)
+
+<br>
+
+# Server :
 
 ![](img/server_1.png)
 
-# Both apps running screenshots :
+<br>
 
-![](img/both_1.png)
+# Client-server :
+
+![](img/client_server_1.png)
+
+<br>
+
+# Multiple clients :
+
+![](img/multiple_clients_1.png)
