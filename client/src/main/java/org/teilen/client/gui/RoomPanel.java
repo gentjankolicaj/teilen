@@ -39,6 +39,9 @@ public class RoomPanel extends JPanel {
     }
 
 
+    public void validateGui() {
+        //revalidate room components with roomRepository data
+    }
 }
 
 

@@ -1,5 +1,8 @@
 package org.teilen.client.gui;
 
+import org.teilen.client.domain.ConnState;
+import org.teilen.client.repository.ConnRepository;
+
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -44,12 +47,12 @@ public class RealtimePanel extends JPanel {
     public void setServerImageRed() {
         if (serverImage != null) {
             this.remove(serverImage);
-            this.serverImage = new JLabel("~ disconnected");
+            this.serverImage = new JLabel("~ offline ");
             this.serverImage.setIcon(getServerRedImageIcon());
             this.add(serverImage, BorderLayout.NORTH);
             this.validate();
         } else {
-            this.serverImage = new JLabel("~ disconnected");
+            this.serverImage = new JLabel("~ offline ");
             this.serverImage.setIcon(getServerRedImageIcon());
             this.add(serverImage, BorderLayout.NORTH);
         }
@@ -57,10 +60,23 @@ public class RealtimePanel extends JPanel {
 
     public void setServerImageGreen() {
         this.remove(serverImage);
-        this.serverImage = new JLabel("~ connected");
+        this.serverImage = new JLabel("~ online ");
         this.serverImage.setIcon(getServerGreenImageIcon());
         this.add(serverImage, BorderLayout.NORTH);
         this.validate();
+    }
+
+    public void validateGui() {
+        ConnState connState = ConnRepository.findConnState();
+        if (connState != null) {
+            if (connState.name().equals(ConnState.ONLINE.name())) {
+                setServerImageGreen();
+            } else if (connState.name().equals(ConnState.OFFLINE.name())) {
+                setServerImageRed();
+            }
+            userPanel.updateClientList();
+            userScrollPane.validate();
+        }
     }
 
     class SingleListSelectionHandler implements ListSelectionListener {

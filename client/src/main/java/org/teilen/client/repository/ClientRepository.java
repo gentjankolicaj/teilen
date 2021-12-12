@@ -3,11 +3,43 @@ package org.teilen.client.repository;
 import org.teilen.common.domain.Client;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class ClientRepository {
 
+    static Client owner = null;
     static final Map<Integer, Client> clients = new HashMap<>();
+
+    public static Client findOwner() {
+        return owner;
+    }
+
+    public static void insertOwner(Client client) {
+        owner = client;
+    }
+
+    public static void updateOwner(String firstname, String lastname) {
+        if (owner != null) {
+            owner.setFirstname(firstname);
+            owner.setLastname(lastname);
+        }
+    }
+
+    public static void deleteOwner() {
+        owner = null;
+    }
+
+
+    //clients crud methods
+    public static Map<Integer, Client> findAll() {
+        return clients;
+    }
+
+    public static List<Client> findAllList() {
+        return clients.entrySet().stream().map(entry -> entry.getValue()).collect(Collectors.toList());
+    }
 
     public static Client findClientById(Integer clientId) {
         return clients.get(clientId);
@@ -32,5 +64,10 @@ public class ClientRepository {
 
     public static void deleteClient(Integer clientId) {
         clients.remove(clientId);
+    }
+
+
+    public static void deleteAllClients() {
+        clients.clear();
     }
 }
