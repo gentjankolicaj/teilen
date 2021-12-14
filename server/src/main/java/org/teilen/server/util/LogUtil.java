@@ -9,14 +9,14 @@ public class LogUtil {
     private static final Logger LOGGER = (Logger) LogManager.getLogger(LogUtil.class);
 
     public static void info(String info) {
-        System.out.println(info);
+        LOGGER.info(info);
     }
 
     public static void warn(String info) {
-        System.out.println(info);
+        LOGGER.warn(info);
     }
 
     public static void error(String info) {
-        System.out.println(info);
+        LOGGER.error(info);
     }
 }

@@ -10,7 +10,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Body implements Serializable {
-    private Metadata metadata;
+    private ContentMetadata contentMetadata;
     private Content content;
 
 }

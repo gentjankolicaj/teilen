@@ -6,16 +6,21 @@ import org.teilen.client.gui.InfoPanel;
 import org.teilen.client.queue.PacketQueue;
 import org.teilen.client.repository.ClientRepository;
 import org.teilen.client.repository.ConnRepository;
+import org.teilen.client.repository.RoomRepository;
+import org.teilen.client.util.LogUtil;
 import org.teilen.common.domain.Client;
+import org.teilen.common.domain.Room;
+import org.teilen.common.domain.RoomContent;
 import org.teilen.common.packet.base.Body;
+import org.teilen.common.packet.base.Content;
 import org.teilen.common.packet.base.Header;
 import org.teilen.common.packet.base.Packet;
-import org.teilen.common.packet.info.ClientInfo;
+import org.teilen.common.packet.base.content_wrapper.ClientInfoWrapper;
+import org.teilen.common.packet.base.content_wrapper.RoomClientsWrapper;
+import org.teilen.common.packet.base.content_wrapper.RoomContentWrapper;
+import org.teilen.common.packet.base.content_wrapper.RoomWrapper;
 import org.teilen.common.packet.media.*;
-import org.teilen.common.packet.meta.ClientOp;
-import org.teilen.common.packet.meta.ClientPacket;
-import org.teilen.common.packet.meta.ConnPacket;
-import org.teilen.common.packet.meta.RoomPacket;
+import org.teilen.common.packet.meta.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +29,7 @@ import java.util.TreeSet;
 
 public class ActivityEngine implements Runnable {
     private static final int threadSleep = 200; //millis
-    private static final int packetNumber = 5;
+    private static final int packetNumber = 10;
 
     //Panels to reflect changes
     private ActivityPanel activityPanel;
@@ -99,6 +104,68 @@ public class ActivityEngine implements Runnable {
                     }
 
                 } else if (packet instanceof RoomPacket) {
+                    RoomPacket roomPacket = (RoomPacket) packet;
+                    Integer roomId = roomPacket.getRoomId();
+                    guiPanelSet.add(GuiPanel.ACTIVITY);
+                    if (roomPacket.roomOp.name().equals(RoomOp.ROOM_READ.name())) {
+                        //todo
+                    } else if (roomPacket.roomOp.name().equals(RoomOp.ROOM_CREATE.name())) {
+                        Body body = roomPacket.getBody();
+                        if (body != null) {
+                            Content content = body.getContent();
+                            if (content != null) {
+                                if (content instanceof RoomWrapper) {
+                                    Room room = ((RoomWrapper) content).getRoom();
+                                    RoomRepository.insertRoom(room);
+                                    LogUtil.info("RoomOp.ROOM_CREATE : Room with id " + room.getId() + " fully received from server.");
+                                } else {
+                                    LogUtil.error("RoomOp.ROOM_CREATE : room data not received.");
+                                }
+                            } else
+                                LogUtil.error("RoomOp.ROOM_CREATE : room data not received.Body content null.");
+                        } else {
+                            LogUtil.error("RoomOp.ROOM_CREATE : room data not received.Body null.");
+                        }
+
+                    } else if (roomPacket.roomOp.name().equals(RoomOp.ROOM_UPDATE.name())) {
+                        Body body = roomPacket.getBody();
+                        if (body != null) {
+                            Content content = body.getContent();
+                            if (content != null) {
+                                if (content instanceof RoomWrapper) {
+                                    Room room = ((RoomWrapper) content).getRoom();
+                                    RoomRepository.updateRoom(room);
+                                    LogUtil.info("RoomOp.UPDATE : Room with id " + room.getId() + " fully received from server.");
+
+                                } else if (content instanceof RoomClientsWrapper) {
+                                    Set<Integer> clientIds = ((RoomClientsWrapper) content).getClientIds();
+                                    Room room = RoomRepository.findRoomById(roomId);
+                                    if (room != null) {
+                                        room.updateClients(clientIds);
+                                        LogUtil.info("RoomOp.UPDATE : Room with id " + room.getId() + " clients ids updated.");
+
+                                    } else
+                                        LogUtil.error("RoomOp.UPDATE : Room with id " + room.getId() + " clients ids not updated.");
+
+                                } else if (content instanceof RoomContentWrapper) {
+                                    Room room = RoomRepository.findRoomById(roomId);
+                                    if (room != null) {
+                                        List<RoomContent> roomContents = ((RoomContentWrapper) content).getContents();
+                                        if (roomContents != null && roomContents.size() != 0) {
+                                            room.updateRoomContentsByGlobal(roomContents);
+                                            LogUtil.info("RoomOp.UPDATE : Room with id " + room.getId() + " clients ids not updated.");
+                                        }
+
+                                    } else
+                                        LogUtil.error("RoomOp.UPDATE : Room with id " + room.getId() + " room content not updated.");
+
+                                }
+                            }
+                        }
+
+                    } else if (roomPacket.roomOp.name().equals(RoomOp.ROOM_DELETE.name())) {
+                        RoomRepository.deleteRoom(roomId);
+                    }
 
                 } else if (packet instanceof ClientPacket) {
                     ClientPacket clientPacket = (ClientPacket) packet;
@@ -108,8 +175,8 @@ public class ActivityEngine implements Runnable {
                         Header header = clientPacket.getHeader();
                         if (header != null) {
                             if (body != null) {
-                                ClientInfo clientInfo = (ClientInfo) body.getContent();
-                                ClientRepository.insertClient(new Client(clientPacket.getClientId(), clientInfo.getFirstname(), clientInfo.getLastname()));
+                                ClientInfoWrapper clientInfoWrapper = (ClientInfoWrapper) body.getContent();
+                                ClientRepository.insertClient(new Client(clientPacket.getClientId(), clientInfoWrapper.getFirstname(), clientInfoWrapper.getLastname()));
                             } else {
                                 ClientRepository.insertClient(new Client(clientPacket.getClientId(), "~ ", "~ "));
                             }
@@ -125,15 +192,15 @@ public class ActivityEngine implements Runnable {
                             if (originId != null && originId.intValue() == -1) {
                                 Integer clientId = clientPacket.getClientId();
                                 if (body != null) {
-                                    ClientInfo clientInfo = (ClientInfo) body.getContent();
-                                    ClientRepository.insertOwner(new Client(clientId, clientInfo.getFirstname(), clientInfo.getLastname()));
+                                    ClientInfoWrapper clientInfoWrapper = (ClientInfoWrapper) body.getContent();
+                                    ClientRepository.insertOwner(new Client(clientId, clientInfoWrapper.getFirstname(), clientInfoWrapper.getLastname()));
                                 } else {
                                     ClientRepository.insertOwner(new Client(clientId, "~ ", "~ "));
                                 }
                             } else {
                                 if (body != null) {
-                                    ClientInfo clientInfo = (ClientInfo) body.getContent();
-                                    ClientRepository.updateClient(new Client(clientPacket.getClientId(), clientInfo.getFirstname(), clientInfo.getLastname()));
+                                    ClientInfoWrapper clientInfoWrapper = (ClientInfoWrapper) body.getContent();
+                                    ClientRepository.updateClient(new Client(clientPacket.getClientId(), clientInfoWrapper.getFirstname(), clientInfoWrapper.getLastname()));
                                 }
                             }
                         }

@@ -9,7 +9,7 @@ import org.teilen.client.util.LogUtil;
 import org.teilen.common.domain.Client;
 import org.teilen.common.packet.base.Body;
 import org.teilen.common.packet.base.Header;
-import org.teilen.common.packet.info.ClientInfo;
+import org.teilen.common.packet.base.content_wrapper.ClientInfoWrapper;
 import org.teilen.common.packet.meta.ClientOp;
 import org.teilen.common.packet.meta.ClientPacket;
 
@@ -222,7 +222,7 @@ public class InfoPanel extends JPanel {
                 if (username != null && username.length() != 0) {
                     String firstname = getFirstname(username);
                     String lastname = getLastname(username);
-                    ClientPacket clientPacket = new ClientPacket(new Header(ownerId, 0), new Body(null, new ClientInfo(firstname, lastname)), ownerId, ClientOp.CLIENT_UPDATE);
+                    ClientPacket clientPacket = new ClientPacket(new Header(ownerId, 0), new Body(null, new ClientInfoWrapper(firstname, lastname)), ownerId, ClientOp.CLIENT_UPDATE);
                     PacketQueue.writeOut(clientPacket);
                 }
             }

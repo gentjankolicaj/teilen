@@ -1,4 +1,4 @@
-package org.teilen.common.packet.info;
+package org.teilen.common.packet.base.content_wrapper;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -8,7 +8,7 @@ import org.teilen.common.packet.base.Content;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ClientInfo extends Content {
+public class ClientInfoWrapper extends Content {
     private String firstname;
     private String lastname;
 }

@@ -4,7 +4,7 @@ import org.teilen.common.domain.Client;
 import org.teilen.common.domain.Room;
 import org.teilen.common.packet.base.Body;
 import org.teilen.common.packet.base.Packet;
-import org.teilen.common.packet.info.ClientInfo;
+import org.teilen.common.packet.base.content_wrapper.ClientInfoWrapper;
 import org.teilen.common.packet.meta.ClientOp;
 import org.teilen.common.packet.meta.ClientPacket;
 import org.teilen.common.packet.meta.RoomPacket;
@@ -77,8 +77,8 @@ public class ActivityPanel extends JSplitPane {
                 } else if (clientPacket.getClientOp().name().equals(ClientOp.CLIENT_UPDATE.name())) {
                     Body body = clientPacket.getBody();
                     if (body != null) {
-                        ClientInfo clientInfo = (ClientInfo) body.getContent();
-                        userPanel.updateClient(new Client(clientPacket.getClientId(), clientInfo.getFirstname(), clientInfo.getLastname()));
+                        ClientInfoWrapper clientInfoWrapper = (ClientInfoWrapper) body.getContent();
+                        userPanel.updateClient(new Client(clientPacket.getClientId(), clientInfoWrapper.getFirstname(), clientInfoWrapper.getLastname()));
                     }
                 } else if (clientPacket.getClientOp().name().equals(ClientOp.CLIENT_DELETE.name())) {
                     userPanel.removeClient(new Client(clientPacket.getClientId(), "~ ", "~ "));

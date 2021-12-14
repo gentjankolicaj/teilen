@@ -4,7 +4,7 @@ import org.teilen.common.domain.Client;
 import org.teilen.common.packet.base.Body;
 import org.teilen.common.packet.base.Header;
 import org.teilen.common.packet.base.Packet;
-import org.teilen.common.packet.info.ClientInfo;
+import org.teilen.common.packet.base.content_wrapper.ClientInfoWrapper;
 import org.teilen.common.packet.media.*;
 import org.teilen.common.packet.meta.ClientOp;
 import org.teilen.common.packet.meta.ClientPacket;
@@ -136,12 +136,12 @@ public class ActivityEngine extends Thread {
                     } else if (clientPacket.getClientOp().name().equals(ClientOp.CLIENT_UPDATE.name())) {
                         //origin : user
                         //Destination : all users
-                        ClientInfo clientInfo = (ClientInfo) clientPacket.getBody().getContent();
-                        Client client = new Client(clientId, clientInfo);
+                        ClientInfoWrapper clientInfoWrapper = (ClientInfoWrapper) clientPacket.getBody().getContent();
+                        Client client = new Client(clientId, clientInfoWrapper);
                         ClientRepository.updateClient(client);
 
                         //Packet to be sent to all clients
-                        ClientPacket uClientPacket = new ClientPacket(new Header(clientId, 0), new Body(null, clientInfo), clientPacket.getClientId(), ClientOp.CLIENT_UPDATE);
+                        ClientPacket uClientPacket = new ClientPacket(new Header(clientId, 0), new Body(null, clientInfoWrapper), clientPacket.getClientId(), ClientOp.CLIENT_UPDATE);
                         updateAllClientPacketMap(allClientPacketMap, clientId, uClientPacket);
 
                     } else if (clientPacket.getClientOp().name().equals(ClientOp.CLIENT_DELETE.name())) {
@@ -167,7 +167,7 @@ public class ActivityEngine extends Thread {
             List<Packet> clientPackets = new ArrayList<>();
             for (int i = 0; i < clients.size(); i++) {
                 Client existingClient = clients.get(i);
-                ClientPacket clientPacket = new ClientPacket(new Header(-1, clientId), new Body(null, new ClientInfo(existingClient.getFirstname(), existingClient.getLastname())), existingClient.getId(), ClientOp.CLIENT_CREATE);
+                ClientPacket clientPacket = new ClientPacket(new Header(-1, clientId), new Body(null, new ClientInfoWrapper(existingClient.getFirstname(), existingClient.getLastname())), existingClient.getId(), ClientOp.CLIENT_CREATE);
                 clientPackets.add(clientPacket);
             }
             return clientPackets;

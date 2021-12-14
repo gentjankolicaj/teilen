@@ -3,7 +3,7 @@ package org.teilen.common.domain;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.teilen.common.packet.info.ClientInfo;
+import org.teilen.common.packet.base.content_wrapper.ClientInfoWrapper;
 
 import java.io.Serializable;
 
@@ -20,9 +20,9 @@ public class Client implements Serializable {
     }
 
 
-    public Client(Integer clientId, ClientInfo clientInfo) {
+    public Client(Integer clientId, ClientInfoWrapper clientInfoWrapper) {
         this.id = clientId;
-        this.firstname = clientInfo.getFirstname();
-        this.lastname = clientInfo.getLastname();
+        this.firstname = clientInfoWrapper.getFirstname();
+        this.lastname = clientInfoWrapper.getLastname();
     }
 }

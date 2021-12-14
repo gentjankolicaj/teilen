@@ -1,20 +1,17 @@
 package org.teilen.common.domain;
 
 import lombok.Data;
-import org.teilen.common.packet.base.Packet;
 
 import java.io.Serializable;
 
 @Data
 public class RoomContent implements Serializable {
-    private Integer id;
+    private Integer globalId;
+    private Integer localId;
 
-    public RoomContent(Integer id) {
-        this.id = id;
-    }
-
-    public RoomContent(Integer id, Packet packet) {
-        this.id = id;
+    public RoomContent(Integer globalId, Integer localId) {
+        this.globalId = globalId;
+        this.localId = localId;
     }
 
 

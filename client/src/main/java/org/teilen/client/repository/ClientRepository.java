@@ -16,6 +16,13 @@ public class ClientRepository {
         return owner;
     }
 
+    public static Integer findOwnerId() {
+        if (owner != null) {
+            return owner.getId();
+        } else
+            return null;
+    }
+
     public static void insertOwner(Client client) {
         owner = client;
     }

@@ -1,18 +1,22 @@
 package org.teilen.common.domain;
 
 import lombok.Data;
-import org.teilen.common.packet.base.Packet;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 @Data
 public class Room {
+    private static int globalIdCounter = 0;
+    private static int localIdCounter = 0;
+
     private Integer id;
     private Integer ownerId;
-    private String name;
-    private static int contentCounter = 0;
-    private List<Integer> clients;
+    private String roomName;
+
+    private Set<Integer> clients;
     private List<RoomContent> contents;
 
 
@@ -25,95 +29,104 @@ public class Room {
         this.ownerId = ownerId;
     }
 
-    public Room(Integer id, String name) {
+    public Room(Integer id, String roomName) {
         this.id = id;
-        this.name = name;
+        this.roomName = roomName;
     }
 
 
     public Room(Integer id, Client firstClient, Client secondClient) {
         this.id = id;
         if (clients == null) {
-            clients = new ArrayList<>();
+            clients = new TreeSet<>();
         }
         clients.add(firstClient.getId());
         clients.add(secondClient.getId());
     }
 
-    static Integer getContentId() {
-        contentCounter++;
-        return contentCounter;
+    static Integer getGlobalId() {
+        globalIdCounter++;
+        return globalIdCounter;
+    }
+
+    static Integer getLocalId() {
+        localIdCounter++;
+        return localIdCounter;
     }
 
     public void addClient(Client client) {
         if (clients == null) {
-            clients = new ArrayList<>();
-            clients.add(client.getId());
-        } else if (clients.size() == 0) {
-            clients.add(client.getId());
-        } else {
-            boolean found = false;
-            Integer newId = client.getId();
-            for (int i = 0; i < clients.size(); i++) {
-                Integer existingId = clients.get(i);
-                if ((newId != null && existingId != null) && (newId.intValue() == existingId.intValue())) {
-                    found = true;
-                    break;
-                }
-            }
+            clients = new TreeSet<>();
+        }
+        clients.add(client.getId());
 
-            if (!found) {
-                clients.add(newId);
-            }
+    }
+
+    public void updateClients(Set<Integer> clientIds) {
+        if (clientIds != null && clientIds.size() != 0) {
+            clients.addAll(clientIds);
+        }
+    }
+
+    public boolean isClient(Integer clientId) {
+        if (clients == null)
+            return false;
+        else {
+            return clients.contains(clientId);
         }
     }
 
     public void removeClient(Client client) {
-        if (clients != null && clients.size() != 0) {
-            Integer newId = client.getId();
-            for (int i = 0; i < clients.size(); i++) {
-                Integer existingId = clients.get(i);
-                if ((newId != null && existingId != null) && (newId.intValue() == existingId.intValue())) {
-                    clients.remove(i);
-                    break;
-                }
-            }
+        if (clients != null && clients.size() != 0 && client != null) {
+            clients.remove(client.getId());
         }
     }
 
-    public RoomContent findRoomContent(Integer contentId) {
+
+    public RoomContent findRoomContentByGlobalId(Integer genericId) {
         for (int i = 0; i < contents.size(); i++) {
             RoomContent roomContent = contents.get(i);
-            Integer actualContentId = roomContent.getId();
-            if ((contentId != null && actualContentId != null) && (contentId.intValue() == actualContentId.intValue())) {
+            Integer actualId = roomContent.getGlobalId();
+            if ((genericId != null && actualId != null) && (actualId.intValue() == genericId.intValue())) {
                 return roomContent;
             }
         }
         return null;
     }
 
-    public void addRoomContent(RoomContent roomContent) {
+    public RoomContent findRoomContentByLocalId(Integer localId) {
+        for (int i = 0; i < contents.size(); i++) {
+            RoomContent roomContent = contents.get(i);
+            Integer actualId = roomContent.getGlobalId();
+            if ((actualId != null && localId != null) && (actualId.intValue() == localId.intValue())) {
+                return roomContent;
+            }
+        }
+        return null;
+    }
+
+    public void addRoomContentByGlobal(RoomContent roomContent) {
         if (contents == null) {
             contents = new ArrayList<>();
         }
-        roomContent.setId(getContentId());
         contents.add(roomContent);
     }
 
-    public void addRoomContent(Packet packet) {
+    public void addRoomContentByLocal(RoomContent roomContent) {
         if (contents == null) {
             contents = new ArrayList<>();
         }
-        RoomContent roomContent = new RoomContent(getContentId(), packet);
+        roomContent.setLocalId(getLocalId());
         contents.add(roomContent);
     }
 
-    public void removeRoomContent(Integer contentId) {
+
+    public void removeRoomContentByGlobal(Integer globalId) {
         if (contents != null && contents.size() != 0) {
             for (int i = 0; i < contents.size(); i++) {
                 RoomContent content = contents.get(i);
-                Integer actualContentId = content.getId();
-                if ((contentId != null && actualContentId != null) && (contentId.intValue() == actualContentId.intValue())) {
+                Integer actualId = content.getGlobalId();
+                if ((actualId != null && globalId != null) && (actualId.intValue() == globalId.intValue())) {
                     contents.remove(i);
                     break;
                 }
@@ -121,24 +134,81 @@ public class Room {
         }
     }
 
-    public void updateRoomContent(Integer contentId, Packet packet) {
-        if (contents == null) {
-            contents = new ArrayList<>();
-        } else if (contents.size() == 0) {
-            RoomContent roomContent = new RoomContent(getContentId(), packet);
-            contents.add(roomContent);
-        } else {
+    public void removeRoomContentByLocal(Integer localId) {
+        if (contents != null && contents.size() != 0) {
             for (int i = 0; i < contents.size(); i++) {
-                RoomContent roomContent = contents.get(i);
-                Integer actualContentId = roomContent.getId();
-                if ((contentId != null && actualContentId != null) && (contentId.intValue() == actualContentId.intValue())) {
+                RoomContent content = contents.get(i);
+                Integer actualId = content.getLocalId();
+                if ((actualId != null && localId != null) && (actualId.intValue() == localId.intValue())) {
                     contents.remove(i);
-
-                    RoomContent updatedRoomContent = new RoomContent(contentId, packet);
-                    contents.add(updatedRoomContent);
                     break;
                 }
             }
+        }
+    }
+
+    public void updateRoomContentByGlobal(RoomContent roomContent) {
+        if (contents == null) {
+            contents = new ArrayList<>();
+        } else if (contents.size() == 0) {
+            contents.add(roomContent);
+        } else {
+            Integer globalId = roomContent.getGlobalId();
+            for (int i = 0; i < contents.size(); i++) {
+                RoomContent tmpRoomContent = contents.get(i);
+                Integer tmpGlobalId = tmpRoomContent.getGlobalId();
+                if ((tmpGlobalId != null && globalId != null) && (tmpGlobalId.intValue() == globalId.intValue())) {
+                    contents.add(i, roomContent);
+                    break;
+                }
+            }
+        }
+    }
+
+    public void updateRoomContentByLocal(RoomContent roomContent) {
+        if (contents == null) {
+            contents = new ArrayList<>();
+        } else if (contents.size() == 0) {
+            contents.add(roomContent);
+        } else {
+            Integer localId = roomContent.getGlobalId();
+            for (int i = 0; i < contents.size(); i++) {
+                RoomContent tmpRoomContent = contents.get(i);
+                Integer tmpLocalId = tmpRoomContent.getGlobalId();
+                if ((tmpLocalId != null && localId != null) && (tmpLocalId.intValue() == localId.intValue())) {
+                    contents.add(i, roomContent);
+                    break;
+                }
+            }
+        }
+    }
+
+    public void updateRoomContentsByGlobal(List<RoomContent> roomContents) {
+        if (contents == null) {
+            contents = new ArrayList<>();
+        } else if (contents.size() == 0) {
+            contents.addAll(roomContents);
+        } else {
+            List<RoomContent> newContent = new ArrayList<>();
+            for (int i = 0; i < roomContents.size(); i++) {
+                RoomContent roomContent = roomContents.get(i);
+                Integer globalId = roomContent.getGlobalId();
+                int foundIndex = -1;
+                for (int j = 0; j < contents.size(); j++) {
+                    RoomContent tmpRoomContent = contents.get(j);
+                    Integer tmpGlobalId = tmpRoomContent.getGlobalId();
+                    if ((tmpGlobalId != null && globalId != null) && (tmpGlobalId.intValue() == globalId.intValue())) {
+                        foundIndex = j;
+                        break;
+                    }
+                }
+                if (foundIndex != -1) {
+                    contents.add(foundIndex, roomContent);
+                } else {
+                    newContent.add(roomContent);
+                }
+            }
+            contents.addAll(newContent);
         }
     }
 }

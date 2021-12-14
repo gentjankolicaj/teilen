@@ -2,27 +2,33 @@ package org.teilen.client.repository;
 
 import org.teilen.common.domain.Client;
 import org.teilen.common.domain.Room;
-import org.teilen.common.packet.base.Packet;
+import org.teilen.common.domain.RoomContent;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class RoomRepository {
+    static Integer roomIdCounter = 0;
     static final Map<Integer, Room> rooms = new HashMap<>();
-    static Integer roomCounter = 0;
 
-    static Room findRoomById(Integer roomId) {
+    private static Integer getRoomId() {
+        roomIdCounter++;
+        return roomIdCounter;
+    }
+
+
+    public static Room findRoomById(Integer roomId) {
         return rooms.get(roomId);
     }
 
-    static Room findRoomByUserIds(Integer firstUserId, Integer secondUserId) {
+    public static Room findRoomByUserIds(Integer firstUserId, Integer secondUserId) {
         Room room = null;
         search:
         for (Map.Entry<Integer, Room> entry : rooms.entrySet()) {
             Room actualRoom = entry.getValue();
             if (actualRoom != null && actualRoom.getOwnerId() == null) {
-                List<Integer> clientIds = actualRoom.getClients();
+                Set<Integer> clientIds = actualRoom.getClients();
                 if (clientIds != null) {
                     int matchesFound = 0;
                     for (Integer clientId : clientIds) {
@@ -43,22 +49,36 @@ public class RoomRepository {
         return room;
     }
 
-    static Room createRoom(Client firstClient, Client secondClient) {
+    public static void insertRoom(Room room) {
+        rooms.put(room.getId(), room);
+    }
+
+    public static void updateRoom(Room room) {
+        rooms.replace(room.getId(), room);
+    }
+
+    public static Room createRoomByServer(Client firstClient, Client secondClient) {
         Room room = findRoomByUserIds(firstClient.getId(), secondClient.getId());
         if (room == null) {
-            room = new Room(roomCounter, firstClient, secondClient);
+            room = new Room(getRoomId(), firstClient, secondClient);
         }
         return room;
     }
 
-    static Room createRoomWithOwner(Client owner) {
-        Room room = new Room(roomCounter, owner.getId());
+    public static Room createRoomByServer(Client owner) {
+        Room room = new Room(getRoomId(), owner.getId());
         room.addClient(owner);
         return room;
     }
 
 
-    static boolean insertClient(Integer roomId, Client client) {
+    public static void deleteRoom(Integer roomId) {
+        rooms.remove(roomId);
+    }
+
+    //===================================================================
+    //Client crud
+    public static boolean insertClient(Integer roomId, Client client) {
         Room room = findRoomById(roomId);
         if (room != null) {
             room.addClient(client);
@@ -67,7 +87,7 @@ public class RoomRepository {
             return false;
     }
 
-    static boolean deleteClient(Integer roomId, Client client) {
+    public static boolean deleteClient(Integer roomId, Client client) {
         Room room = findRoomById(roomId);
         if (room != null) {
             room.removeClient(client);
@@ -77,28 +97,58 @@ public class RoomRepository {
     }
 
 
-    static boolean insertPacket(Integer roomId, Packet packet) {
+    //=============================================================
+    //Packet crud
+    public static boolean insertRoomContentByServer(Integer roomId, RoomContent roomContent) {
         Room room = findRoomById(roomId);
         if (room != null) {
-            room.addRoomContent(packet);
+            room.addRoomContentByGlobal(roomContent);
             return true;
         } else
             return false;
     }
 
-    static boolean deletePacket(Integer roomId, Integer contentId) {
+    public static boolean insertRoomContentByLocal(Integer roomId, RoomContent roomContent) {
         Room room = findRoomById(roomId);
         if (room != null) {
-            room.removeRoomContent(contentId);
+            room.addRoomContentByLocal(roomContent);
             return true;
         } else
             return false;
     }
 
-    static boolean updatePacket(Integer roomId, Integer contentId, Packet packet) {
+    public static boolean deleteRoomContentByServer(Integer roomId, Integer globalId) {
         Room room = findRoomById(roomId);
         if (room != null) {
-            room.updateRoomContent(contentId, packet);
+            room.removeRoomContentByGlobal(globalId);
+            return true;
+        } else
+            return false;
+    }
+
+    public static boolean deleteRoomContentByLocal(Integer roomId, Integer localId) {
+        Room room = findRoomById(roomId);
+        if (room != null) {
+            room.removeRoomContentByLocal(localId);
+            return true;
+        } else
+            return false;
+    }
+
+
+    public static boolean updateRoomContentByServer(Integer roomId, RoomContent roomContent) {
+        Room room = findRoomById(roomId);
+        if (room != null) {
+            room.updateRoomContentByGlobal(roomContent);
+            return true;
+        } else
+            return false;
+    }
+
+    public static boolean updateRoomContentByLocal(Integer roomId, RoomContent roomContent) {
+        Room room = findRoomById(roomId);
+        if (room != null) {
+            room.updateRoomContentByLocal(roomContent);
             return true;
         } else
             return false;
