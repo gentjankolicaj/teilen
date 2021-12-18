@@ -16,6 +16,7 @@ import java.util.List;
 public class RoomContentWrapper extends Content {
     private List<RoomContent> contents;
 
+
     public void addRoomContent(RoomContent roomContent) {
         if (contents == null) {
             contents = new ArrayList<>();

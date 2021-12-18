@@ -2,15 +2,17 @@ package org.teilen.common.domain;
 
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
 @Data
-public class Room {
-    private static int globalIdCounter = 0;
-    private static int localIdCounter = 0;
+public class Room implements Serializable {
+    transient static int roomIdCounter = 0;
+    transient static int globalIdCounter = 0;
+    transient static int localIdCounter = 0;
 
     private Integer id;
     private Integer ownerId;
@@ -19,24 +21,20 @@ public class Room {
     private Set<Integer> clients;
     private List<RoomContent> contents;
 
-
-    public Room(Integer id) {
-        this.id = id;
-    }
-
-    public Room(Integer id, Integer ownerId) {
-        this.id = id;
+    public Room(Integer ownerId) {
+        this.id = getRoomId();
         this.ownerId = ownerId;
     }
 
-    public Room(Integer id, String roomName) {
-        this.id = id;
+    public Room(Integer ownerId, String roomName) {
+        this.id = getRoomId();
+        this.ownerId = ownerId;
         this.roomName = roomName;
     }
 
 
-    public Room(Integer id, Client firstClient, Client secondClient) {
-        this.id = id;
+    public Room(Client firstClient, Client secondClient) {
+        this.id = getRoomId();
         if (clients == null) {
             clients = new TreeSet<>();
         }
@@ -53,6 +51,12 @@ public class Room {
         localIdCounter++;
         return localIdCounter;
     }
+
+    static Integer getRoomId() {
+        roomIdCounter++;
+        return roomIdCounter;
+    }
+
 
     public void addClient(Client client) {
         if (clients == null) {
