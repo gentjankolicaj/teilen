@@ -1,5 +1,6 @@
 package org.teilen.client.engine;
 
+import org.teilen.client.domain.ConnState;
 import org.teilen.client.domain.GuiPanel;
 import org.teilen.client.gui.ActivityPanel;
 import org.teilen.client.gui.InfoPanel;
@@ -60,7 +61,7 @@ public class ActivityEngine implements Runnable {
                         if (guiPanelSet != null) {
                             for (GuiPanel guiPanel : guiPanelSet) {
                                 if (guiPanel.name().equals(GuiPanel.ACTIVITY.name())) {
-                                    activityPanel.validateActivityGui();
+                                    activityPanel.validateGui();
                                     infoPanel.validateOwnerGui();
                                 } else if (guiPanel.name().equals(GuiPanel.INFO.name())) {
                                     infoPanel.validateGui();
@@ -101,23 +102,31 @@ public class ActivityEngine implements Runnable {
                     guiPanelSet.add(GuiPanel.ACTIVITY);
                     if (connPacket.connOp != null) {
                         ConnRepository.updateConnState(connPacket.connOp);
+                        if (ConnRepository.findConnState().name().equals(ConnState.OFFLINE)) {
+                            ClientRepository.deleteAll();
+                        }
                     }
 
                 } else if (packet instanceof RoomPacket) {
                     RoomPacket roomPacket = (RoomPacket) packet;
                     Integer roomId = roomPacket.getRoomId();
+                    Header header = roomPacket.getHeader();
+                    Body body = roomPacket.getBody();
+                    Integer originId = null;
+                    if (header != null) {
+                        originId = header.getOriginId();
+                    }
                     guiPanelSet.add(GuiPanel.ACTIVITY);
                     if (roomPacket.roomOp.name().equals(RoomOp.ROOM_READ.name())) {
                         //todo
                     } else if (roomPacket.roomOp.name().equals(RoomOp.ROOM_CREATE.name())) {
-                        Body body = roomPacket.getBody();
                         if (body != null) {
                             Content content = body.getContent();
                             if (content != null) {
                                 if (content instanceof RoomWrapper) {
                                     Room room = ((RoomWrapper) content).getRoom();
                                     RoomRepository.insertRoom(room);
-                                    LogUtil.info("RoomOp.ROOM_CREATE : Room with id " + room.getId() + " fully received from server.");
+                                    LogUtil.info("RoomOp.ROOM_CREATE : Room with id " + roomId + " fully received from server.");
                                 } else {
                                     LogUtil.error("RoomOp.ROOM_CREATE : room data not received.");
                                 }
@@ -128,32 +137,31 @@ public class ActivityEngine implements Runnable {
                         }
 
                     } else if (roomPacket.roomOp.name().equals(RoomOp.ROOM_UPDATE.name())) {
-                        Body body = roomPacket.getBody();
                         if (body != null) {
                             Content content = body.getContent();
                             if (content != null) {
                                 if (content instanceof RoomWrapper) {
                                     Room room = ((RoomWrapper) content).getRoom();
                                     RoomRepository.updateRoom(room);
-                                    LogUtil.info("RoomOp.UPDATE : Room with id " + room.getId() + " fully received from server.");
+                                    LogUtil.info("RoomOp.UPDATE : Room with id " + roomId + " fully received from server.");
 
                                 } else if (content instanceof RoomClientsWrapper) {
                                     Set<Integer> clientIds = ((RoomClientsWrapper) content).getClientIds();
                                     Room room = RoomRepository.findRoomById(roomId);
                                     if (room != null) {
                                         room.updateClients(clientIds);
-                                        LogUtil.info("RoomOp.UPDATE : Room with id " + room.getId() + " clients ids updated.");
+                                        LogUtil.info("RoomOp.UPDATE : Room with id " + roomId + " clients ids updated.");
 
                                     } else
-                                        LogUtil.error("RoomOp.UPDATE : Room with id " + room.getId() + " clients ids not updated.");
+                                        LogUtil.error("RoomOp.UPDATE : Room with id " + roomId + " clients ids not updated.");
 
                                 } else if (content instanceof RoomContentWrapper) {
                                     Room room = RoomRepository.findRoomById(roomId);
                                     if (room != null) {
-                                        List<RoomContent> roomContents = ((RoomContentWrapper) content).getContents();
+                                        List<RoomContent> roomContents = ((RoomContentWrapper) content).getRoomContents();
                                         if (roomContents != null && roomContents.size() != 0) {
                                             room.updateRoomContentsByGlobal(roomContents);
-                                            LogUtil.info("RoomOp.UPDATE : Room with id " + room.getId() + " clients ids not updated.");
+                                            LogUtil.info("RoomOp.UPDATE : Room with id " + room.getId() + " room content updated.");
                                         }
 
                                     } else
