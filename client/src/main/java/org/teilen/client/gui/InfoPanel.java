@@ -318,7 +318,7 @@ public class InfoPanel extends JPanel {
     }
 
     private void removeExistingClients() {
-        ClientRepository.deleteAllClients();
+        ClientRepository.deleteAll();
     }
 
     public void validateGui() {

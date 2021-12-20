@@ -74,12 +74,13 @@ public class RealtimePanel extends JPanel {
             } else if (connState.name().equals(ConnState.OFFLINE.name())) {
                 setServerImageRed();
             }
-            userPanel.updateClientList();
+            userPanel.updateClients();
             userScrollPane.validate();
         }
     }
 
     class SingleListSelectionHandler implements ListSelectionListener {
+        Integer initClientId = null;
         public void valueChanged(ListSelectionEvent e) {
             ListSelectionModel lsm = (ListSelectionModel) e.getSource();
             // Find out which indexes are selected.
@@ -93,7 +94,15 @@ public class RealtimePanel extends JPanel {
                 }
             }
             Integer clientId = userPanel.getClientId(selectedIndex);
-            activityPanel.openRoomWithClient(clientId);
+            if (clientId != null) {
+                if (initClientId == null) {
+                    initClientId = clientId;
+                    activityPanel.openRoomWithClient(clientId);
+                } else if (clientId.intValue() != initClientId.intValue()) {
+                    initClientId = clientId;
+                    activityPanel.openRoomWithClient(clientId);
+                }
+            }
         }
     }
 

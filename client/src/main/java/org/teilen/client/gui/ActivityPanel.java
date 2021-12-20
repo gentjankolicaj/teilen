@@ -24,18 +24,18 @@ public class ActivityPanel extends JPanel {
 
 
     public void openRoomWithClient(Integer clientId) {
-        RoomPanel newRoomPanel = new RoomPanel(clientId);
         this.remove(roomPanel);
+
+        RoomPanel newRoomPanel = new RoomPanel(clientId);
         this.roomPanel = newRoomPanel;
         this.add(roomPanel, BorderLayout.CENTER);
-        this.validate();
+        this.revalidate();
     }
 
 
-    public void validateActivityGui() {
+    public void validateGui() {
         this.realtimePanel.validateGui();
         this.roomPanel.validateGui();
-        this.validate();
     }
 
 
