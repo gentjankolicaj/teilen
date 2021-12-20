@@ -1,8 +1,13 @@
 package org.teilen.common.domain;
 
-public class TextContent extends RoomContent {
+import lombok.Data;
 
-    public TextContent(Integer globalId, Integer localId) {
-        super(globalId, localId);
+@Data
+public class TextContent extends RoomContent {
+    private String text;
+
+    public TextContent(Integer creatorId, String text) {
+        super.setCreatorId(creatorId);
+        this.text = text;
     }
 }

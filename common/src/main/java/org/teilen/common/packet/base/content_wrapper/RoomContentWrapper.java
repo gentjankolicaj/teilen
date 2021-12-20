@@ -1,8 +1,6 @@
 package org.teilen.common.packet.base.content_wrapper;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.teilen.common.domain.RoomContent;
 import org.teilen.common.packet.base.Content;
 
@@ -11,17 +9,25 @@ import java.util.List;
 
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class RoomContentWrapper extends Content {
-    private List<RoomContent> contents;
+    private List<RoomContent> roomContents;
 
+    public RoomContentWrapper(List<RoomContent> roomContents) {
+        this.roomContents = roomContents;
+    }
+
+    public RoomContentWrapper(RoomContent roomContent) {
+        if (roomContents == null) {
+            roomContents = new ArrayList<>();
+        }
+        this.roomContents.add(roomContent);
+    }
 
     public void addRoomContent(RoomContent roomContent) {
-        if (contents == null) {
-            contents = new ArrayList<>();
+        if (roomContents == null) {
+            roomContents = new ArrayList<>();
         }
-        contents.add(roomContent);
+        roomContents.add(roomContent);
     }
 
 }

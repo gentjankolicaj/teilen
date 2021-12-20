@@ -1,8 +1,12 @@
 package org.teilen.common.domain;
 
-public class FileContent extends RoomContent {
+import lombok.Data;
 
-    public FileContent(Integer globalId, Integer localId) {
-        super(globalId, localId);
+@Data
+public class FileContent extends RoomContent {
+    private byte[] array;
+
+    public FileContent(byte[] array) {
+        this.array = array;
     }
 }
