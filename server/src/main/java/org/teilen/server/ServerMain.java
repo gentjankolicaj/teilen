@@ -8,10 +8,22 @@ import org.teilen.server.gui.ServerFrame;
 public class ServerMain {
 
     /**
-     * Launch the application.
+     * To launch the application : java -jar server.jar -g -a
+     * -g => launch gui
+     * -a => launch rest api
      */
     public static void main(String[] args) {
-        boolean launchGui = true;
+        boolean launchGui = false;
+        boolean launchApi = false;
+        if (args != null && args.length != 0) {
+            for (int i = 0; i < args.length; i++) {
+                if (args[i].equals("-G") || args[i].equals("-g")) {
+                    launchGui = true;
+                } else if (args[i].equals("-A") || args[i].equals("-a")) {
+                    launchApi = true;
+                }
+            }
+        }
         ActivityEngine activityEngine = new ActivityEngine();
         IOEngine ioEngine = new IOEngine(launchGui);
 
@@ -22,4 +34,6 @@ public class ServerMain {
             new ServerFrame(activityEngine, ioEngine);
         }
     }
+
+
 }
