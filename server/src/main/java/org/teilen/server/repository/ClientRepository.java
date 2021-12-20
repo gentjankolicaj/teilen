@@ -44,4 +44,8 @@ public class ClientRepository {
         clients.remove(clientId);
     }
 
+    public static void deleteAll() {
+        clients.clear();
+    }
+
 }

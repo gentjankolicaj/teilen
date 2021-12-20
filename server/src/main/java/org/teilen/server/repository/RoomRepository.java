@@ -4,50 +4,69 @@ import org.teilen.common.domain.Client;
 import org.teilen.common.domain.Room;
 import org.teilen.common.domain.RoomContent;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class RoomRepository {
 
-    static Integer roomIdCounter = 0;
     static final Map<Integer, Room> rooms = new HashMap<>();
-
-    private static Integer getRoomId() {
-        roomIdCounter++;
-        return roomIdCounter;
-    }
 
 
     public static Room findRoomById(Integer roomId) {
         return rooms.get(roomId);
     }
 
-    public static Room findRoomByUserIds(Integer firstUserId, Integer secondUserId) {
+    public static List<Room> findAllList() {
+        return rooms.entrySet().stream().map(entry -> entry.getValue()).collect(Collectors.toList());
+    }
+
+    public static Map<Integer, Room> findAll() {
+        return rooms;
+    }
+
+    public static Room findRoomByClientIds(Integer firstClientId, Integer secondClientId) {
+        Set<Integer> clientIds = new TreeSet<>();
+        clientIds.add(firstClientId);
+        clientIds.add(secondClientId);
+
         Room room = null;
         search:
         for (Map.Entry<Integer, Room> entry : rooms.entrySet()) {
-            Room actualRoom = entry.getValue();
-            if (actualRoom != null && actualRoom.getOwnerId() == null) {
-                Set<Integer> clientIds = actualRoom.getClients();
-                if (clientIds != null) {
-                    int matchesFound = 0;
-                    for (Integer clientId : clientIds) {
-                        if (clientId.intValue() == firstUserId.intValue()) {
-                            matchesFound++;
-                            continue;
-                        } else if (clientId.intValue() == secondUserId.intValue()) {
-                            matchesFound++;
-                            continue;
-                        } else if (matchesFound == 2) {
-                            room = actualRoom;
-                            break search;
-                        }
+            Room tmpRoom = entry.getValue();
+            if (tmpRoom != null) {
+                Set<Integer> existingClientIds = tmpRoom.getClients();
+                if (existingClientIds != null && existingClientIds.size() != 0) {
+                    boolean containsIds = clientIds.containsAll(existingClientIds);
+                    if (containsIds) {
+                        room = tmpRoom;
+                        break;
                     }
                 }
             }
         }
         return room;
+    }
+
+    public static Room findRoomByClientIds(Set<Integer> clientIds) {
+        if (clientIds == null || clientIds.size() == 0)
+            return null;
+        else {
+            Room room = null;
+            for (Map.Entry<Integer, Room> roomEntry : rooms.entrySet()) {
+                Room tmpRoom = roomEntry.getValue();
+                if (tmpRoom != null) {
+                    Set<Integer> existingClientIds = tmpRoom.getClients();
+                    if (existingClientIds != null && existingClientIds.size() != 0) {
+                        boolean containsIds = clientIds.containsAll(existingClientIds);
+                        if (containsIds) {
+                            room = tmpRoom;
+                            break;
+                        }
+                    }
+                }
+            }
+            return room;
+        }
     }
 
     public static void insertRoom(Room room) {
@@ -58,17 +77,18 @@ public class RoomRepository {
         rooms.replace(room.getId(), room);
     }
 
-    public static Room createRoomByServer(Client firstClient, Client secondClient) {
-        Room room = findRoomByUserIds(firstClient.getId(), secondClient.getId());
-        if (room == null) {
-            room = new Room(getRoomId(), firstClient, secondClient);
-        }
+
+    public static Room createRoomByServer(Set<Integer> clientIds) {
+        Room room = new Room(-1, "Normal-chat");
+        room.setClients(clientIds);
+        rooms.put(room.getId(), room);
         return room;
     }
 
-    public static Room createRoomByServer(Client owner) {
-        Room room = new Room(getRoomId(), owner.getId());
-        room.addClient(owner);
+    public static Room createRoomByClient(Integer ownerId, Set<Integer> clientIds) {
+        Room room = new Room(ownerId, "Multiple-chat");
+        room.setClients(clientIds);
+        rooms.put(room.getId(), room);
         return room;
     }
 
