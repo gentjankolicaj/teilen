@@ -29,13 +29,15 @@ public class ActivityPanel extends JPanel {
         RoomPanel newRoomPanel = new RoomPanel(clientId);
         this.roomPanel = newRoomPanel;
         this.add(roomPanel, BorderLayout.CENTER);
-        this.revalidate();
+        this.validate();
     }
 
 
     public void validateGui() {
         this.realtimePanel.validateGui();
-        this.roomPanel.validateGui();
+        if (roomPanel != null) {
+            this.roomPanel.validateGui();
+        }
     }
 
 

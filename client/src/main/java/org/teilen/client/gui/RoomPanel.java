@@ -32,8 +32,7 @@ public class RoomPanel extends JPanel {
 
     public RoomPanel() {
         this.setLayout(new BorderLayout(0, 0));
-
-        this.noChatLbl = new JLabel("    No chat window opened , click an available user and start chatting...");
+        this.noChatLbl = new JLabel("No chat window opened , click an available user and start chatting...");
         this.add(noChatLbl, BorderLayout.CENTER);
     }
 
@@ -51,14 +50,16 @@ public class RoomPanel extends JPanel {
         } else {
             this.setLayout(new BorderLayout(0, 0));
 
-            this.noChatLbl = new JLabel("    No chat window opened , click an available user and start chatting...");
+            this.noChatLbl = new JLabel("No chat window opened , click an available user and start chatting...");
             this.add(noChatLbl, BorderLayout.CENTER);
         }
     }
 
 
     public void validateGui() {
-        this.bodyPanel.revalidateGui();
+        if (bodyPanel != null) {
+            this.bodyPanel.revalidateGui();
+        }
     }
 
 
@@ -136,10 +137,13 @@ public class RoomPanel extends JPanel {
         Integer clientId;
         Integer ownerId;
 
+        JLabel emptyRoomContentLbl;
         JScrollPane allDaysScrollPane;
         JPanel containerPanel;
         List<DayPanel> dayPanels;
 
+        boolean syncedLabelFlag;
+        boolean removeInitLabels = true;
 
         public BodyPanel(Integer clientId) {
             this.clientId = clientId;
@@ -147,18 +151,17 @@ public class RoomPanel extends JPanel {
 
             this.containerPanel = new JPanel();
             this.dayPanels = new ArrayList<>();
-            this.initGui();
+            this.init();
 
             this.allDaysScrollPane = new JScrollPane(containerPanel, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
                     JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 
             this.setLayout(new BorderLayout());
             this.add(allDaysScrollPane, BorderLayout.CENTER);
-
         }
 
-        private void initGui() {
-            containerPanel.setLayout(new FlowLayout());
+        private void init() {
+            this.containerPanel.setLayout(new BoxLayout(containerPanel, BoxLayout.Y_AXIS));
             if (ownerId != null && clientId != null) {
                 Room room = RoomRepository.findRoomByClientIds(ownerId, clientId);
                 if (room != null) {
@@ -187,12 +190,12 @@ public class RoomPanel extends JPanel {
                             containerPanel.add(dayPanels.get(i), i);
                         }
                     } else {
-                        JLabel emptyRoomContentLbl = new JLabel("Room synced.Start chatting !");
+                        emptyRoomContentLbl = new JLabel("Room synced.Start chatting !");
                         containerPanel.add(emptyRoomContentLbl);
-                    }
 
+                    }
                 } else {
-                    JLabel emptyRoomContentLbl = new JLabel("Room syncing...");
+                    emptyRoomContentLbl = new JLabel("Room syncing...");
                     containerPanel.add(emptyRoomContentLbl);
 
                     //Send read room packet to server
@@ -200,10 +203,9 @@ public class RoomPanel extends JPanel {
                     RoomPacket rRoomPacket = new RoomPacket(new Header(ownerId, -1), new Body(null, new RoomClientsWrapper(clientIds)), null, RoomOp.ROOM_READ);
                     PacketQueue.writeOut(rRoomPacket);
                 }
-
             }
-
         }
+
 
         private void revalidateGui() {
             if (ownerId != null && clientId != null) {
@@ -211,22 +213,33 @@ public class RoomPanel extends JPanel {
                 if (room != null) {
                     List<RoomContent> roomContents = room.getContents();
                     if (roomContents != null && roomContents.size() != 0) {
+                        if (removeInitLabels) {
+                            containerPanel.removeAll();
+                            removeInitLabels = false;
+                        }
 
                         //create missing day panels
                         for (int i = 0; i < roomContents.size(); i++) {
                             RoomContent roomContent = roomContents.get(i);
                             LocalDate contentDate = roomContent.getCreatedDate();
                             if (contentDate != null) {
-                                for (int j = 0; j < dayPanels.size(); j++) {
-                                    DayPanel dayPanel = dayPanels.get(i);
-                                    LocalDate existingDate = dayPanel.getDate();
-                                    if (!existingDate.equals(contentDate)) {
-                                        DayPanel newDayPanel = new DayPanel(contentDate, roomContent);
-                                        dayPanels.add(newDayPanel);
-                                        break;
-                                    } else {
-                                        dayPanel.addRoomContent(roomContent);
-                                    }
+                                if (dayPanels.size() != 0) {
+                                    int j = 0;
+                                    do {
+                                        DayPanel dayPanel = dayPanels.get(j);
+                                        LocalDate existingDate = dayPanel.getDate();
+                                        if (!existingDate.equals(contentDate)) {
+                                            DayPanel newDayPanel = new DayPanel(contentDate, roomContent);
+                                            dayPanels.add(newDayPanel);
+                                            break;
+                                        } else {
+                                            dayPanel.addRoomContent(roomContent);
+                                        }
+                                        j++;
+                                    } while (j < dayPanels.size());
+                                } else {
+                                    DayPanel newDayPanel = new DayPanel(contentDate, roomContent);
+                                    dayPanels.add(newDayPanel);
                                 }
                             }
                         }
@@ -246,20 +259,17 @@ public class RoomPanel extends JPanel {
                             }
                         }
                     } else {
-                        JLabel emptyRoomContentLbl = new JLabel("Room synced.Start chatting !");
-                        containerPanel.add(emptyRoomContentLbl);
+                        if (!syncedLabelFlag) {
+                            containerPanel.remove(emptyRoomContentLbl);
+                            emptyRoomContentLbl = new JLabel("Room synced.Start chatting !");
+                            containerPanel.add(emptyRoomContentLbl);
+                            syncedLabelFlag = true;
+                        }
                     }
-                    this.validate();
-                } else {
-                    JLabel emptyRoomContentLbl = new JLabel("Room syncing...");
-                    containerPanel.add(emptyRoomContentLbl);
-
-                    //Send read room packet to server
-                    Set<Integer> clientIds = getClientIds(ownerId, clientId);
-                    RoomPacket rRoomPacket = new RoomPacket(new Header(ownerId, -1), new Body(null, new RoomClientsWrapper(clientIds)), null, RoomOp.ROOM_READ);
-                    PacketQueue.writeOut(rRoomPacket);
                 }
             }
+            this.allDaysScrollPane.validate();
+            this.validate();
         }
 
         private Set<Integer> getClientIds(Integer ownerId, Integer... ids) {
@@ -343,7 +353,7 @@ public class RoomPanel extends JPanel {
         private void sendMessage(String message) {
             Room room = RoomRepository.findRoomByClientIds(ownerId, clientId);
             if (room != null) {
-                TextContent textContent = new TextContent(ownerId, message);
+                TextContent textContent = new TextContent(ownerId, LocalDate.now(), message);
                 room.addRoomContentByLocal(textContent);
                 RoomPacket uRoomPacket = new RoomPacket(new Header(ownerId, -1), new Body(null, new RoomContentWrapper(textContent)), room.getId(), RoomOp.ROOM_UPDATE);
                 PacketQueue.writeOut(uRoomPacket);

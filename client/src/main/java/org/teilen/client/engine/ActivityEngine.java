@@ -29,7 +29,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 public class ActivityEngine implements Runnable {
-    private static final int threadSleep = 200; //millis
+    private static final int threadSleep = 300; //millis
     private static final int packetNumber = 10;
 
     //Panels to reflect changes
@@ -68,6 +68,9 @@ public class ActivityEngine implements Runnable {
                                 }
                             }
                         }
+                    } else {
+                        activityPanel.validateGui();
+                        infoPanel.validateGui();
                     }
                 } else {
                     long otherSleep = (long) (threadSleep - (threadSleep * 0.9));
