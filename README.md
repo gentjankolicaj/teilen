@@ -36,6 +36,4 @@ Desktop communication application with sockets.It also has messaging, file trans
 
 ![](img/multiple_clients_1.png)
 
-<br>--------------------------------------------------------------------------------------------------------------------
 
-![](img/multiple_clients_2.png)
