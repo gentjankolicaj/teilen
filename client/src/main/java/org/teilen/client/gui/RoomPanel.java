@@ -27,12 +27,11 @@ public class RoomPanel extends JPanel {
     HeaderPanel headerPanel;
     BodyPanel bodyPanel;
     FooterPanel footerPanel;
-
     JLabel noChatLbl;
 
     public RoomPanel() {
         this.setLayout(new BorderLayout(0, 0));
-        this.noChatLbl = new JLabel("No chat window opened , click an available user and start chatting...");
+        this.noChatLbl = new JLabel("Click an available user and start chatting...");
         this.add(noChatLbl, BorderLayout.CENTER);
     }
 
@@ -41,7 +40,7 @@ public class RoomPanel extends JPanel {
             this.setLayout(new BorderLayout(0, 0));
 
             this.headerPanel = new HeaderPanel(clientId);
-            this.bodyPanel = new BodyPanel(clientId);
+            this.bodyPanel = new BodyPanel(clientId, headerPanel.syncLbl);
             this.footerPanel = new FooterPanel(clientId);
 
             this.add(headerPanel, BorderLayout.NORTH);
@@ -50,16 +49,23 @@ public class RoomPanel extends JPanel {
         } else {
             this.setLayout(new BorderLayout(0, 0));
 
-            this.noChatLbl = new JLabel("No chat window opened , click an available user and start chatting...");
+            this.noChatLbl = new JLabel("Click an available user and start chatting...");
             this.add(noChatLbl, BorderLayout.CENTER);
         }
     }
 
 
     public void validateGui() {
-        if (bodyPanel != null) {
+        if (this.headerPanel != null) {
+            this.headerPanel.revalidateGui();
+        }
+        if (this.bodyPanel != null) {
             this.bodyPanel.revalidateGui();
         }
+        if (this.footerPanel != null) {
+            this.footerPanel.revalidateGui();
+        }
+        this.validate();
     }
 
 
@@ -68,11 +74,13 @@ public class RoomPanel extends JPanel {
 
         JPanel westPanel;
         JPanel eastPanel;
+        JPanel centerPanel;
 
         JLabel usernameLbl;
         JLabel addUserLbl;
         JLabel cameraLbl;
         JLabel phoneLbl;
+        JLabel syncLbl;
         Map<String, ImageIcon> iconMap = getIconMap();
 
 
@@ -84,11 +92,13 @@ public class RoomPanel extends JPanel {
 
             this.westPanel = new JPanel();
             this.eastPanel = new JPanel();
+            this.centerPanel = new JPanel();
 
             this.usernameLbl = new JLabel(username);
             this.addUserLbl = new JLabel("  ");
             this.cameraLbl = new JLabel("  ");
             this.phoneLbl = new JLabel("  ");
+            this.syncLbl = new JLabel("Room syncing...");
 
             this.usernameLbl.setIcon(iconMap.get("User"));
             this.addUserLbl.setIcon(iconMap.get("AddUser"));
@@ -103,9 +113,12 @@ public class RoomPanel extends JPanel {
             this.eastPanel.add(cameraLbl);
             this.eastPanel.add(phoneLbl);
 
+            this.centerPanel.add(syncLbl);
+
             //Set panels east & west
             this.add(westPanel, BorderLayout.WEST);
             this.add(eastPanel, BorderLayout.EAST);
+            this.add(centerPanel, BorderLayout.CENTER);
 
             //Add contentPane to parent panel
         }
@@ -130,6 +143,11 @@ public class RoomPanel extends JPanel {
                 username = "";
             return username;
         }
+
+        public void revalidateGui() {
+            String recentUsername = getUsername(ClientRepository.findClientById(clientId));
+            usernameLbl.setText(recentUsername);
+        }
     }
 
 
@@ -137,7 +155,7 @@ public class RoomPanel extends JPanel {
         Integer clientId;
         Integer ownerId;
 
-        JLabel emptyRoomContentLbl;
+        JLabel syncLbl;
         JScrollPane allDaysScrollPane;
         JPanel containerPanel;
         List<DayPanel> dayPanels;
@@ -145,9 +163,10 @@ public class RoomPanel extends JPanel {
         boolean syncedLabelFlag;
         boolean removeInitLabels = true;
 
-        public BodyPanel(Integer clientId) {
+        public BodyPanel(Integer clientId, JLabel syncLbl) {
             this.clientId = clientId;
             this.ownerId = ClientRepository.findOwnerId();
+            this.syncLbl = syncLbl;
 
             this.containerPanel = new JPanel();
             this.dayPanels = new ArrayList<>();
@@ -176,7 +195,7 @@ public class RoomPanel extends JPanel {
                                     DayPanel dayPanel = dayPanels.get(i);
                                     LocalDate existingDate = dayPanel.getDate();
                                     if (!existingDate.equals(contentDate)) {
-                                        DayPanel newDayPanel = new DayPanel(contentDate, roomContent);
+                                        DayPanel newDayPanel = new DayPanel(ownerId, contentDate, roomContent);
                                         dayPanels.add(newDayPanel);
                                         break;
                                     } else {
@@ -189,15 +208,10 @@ public class RoomPanel extends JPanel {
                         for (int i = 0; i < dayPanels.size(); i++) {
                             containerPanel.add(dayPanels.get(i), i);
                         }
-                    } else {
-                        emptyRoomContentLbl = new JLabel("Room synced.Start chatting !");
-                        containerPanel.add(emptyRoomContentLbl);
+                    } else
+                        syncLbl.setText("Room synced");
 
-                    }
                 } else {
-                    emptyRoomContentLbl = new JLabel("Room syncing...");
-                    containerPanel.add(emptyRoomContentLbl);
-
                     //Send read room packet to server
                     Set<Integer> clientIds = getClientIds(ownerId, clientId);
                     RoomPacket rRoomPacket = new RoomPacket(new Header(ownerId, -1), new Body(null, new RoomClientsWrapper(clientIds)), null, RoomOp.ROOM_READ);
@@ -229,7 +243,7 @@ public class RoomPanel extends JPanel {
                                         DayPanel dayPanel = dayPanels.get(j);
                                         LocalDate existingDate = dayPanel.getDate();
                                         if (!existingDate.equals(contentDate)) {
-                                            DayPanel newDayPanel = new DayPanel(contentDate, roomContent);
+                                            DayPanel newDayPanel = new DayPanel(ownerId, contentDate, roomContent);
                                             dayPanels.add(newDayPanel);
                                             break;
                                         } else {
@@ -238,7 +252,7 @@ public class RoomPanel extends JPanel {
                                         j++;
                                     } while (j < dayPanels.size());
                                 } else {
-                                    DayPanel newDayPanel = new DayPanel(contentDate, roomContent);
+                                    DayPanel newDayPanel = new DayPanel(ownerId, contentDate, roomContent);
                                     dayPanels.add(newDayPanel);
                                 }
                             }
@@ -260,16 +274,13 @@ public class RoomPanel extends JPanel {
                         }
                     } else {
                         if (!syncedLabelFlag) {
-                            containerPanel.remove(emptyRoomContentLbl);
-                            emptyRoomContentLbl = new JLabel("Room synced.Start chatting !");
-                            containerPanel.add(emptyRoomContentLbl);
+                            syncLbl.setText("Room synced");
                             syncedLabelFlag = true;
                         }
                     }
                 }
             }
             this.allDaysScrollPane.validate();
-            this.validate();
         }
 
         private Set<Integer> getClientIds(Integer ownerId, Integer... ids) {
@@ -279,8 +290,6 @@ public class RoomPanel extends JPanel {
                 clientIds.add(id);
             return clientIds;
         }
-
-
     }
 
 
@@ -362,6 +371,8 @@ public class RoomPanel extends JPanel {
             }
         }
 
+        public void revalidateGui() {
+        }
     }
 
 }

@@ -1,42 +1,51 @@
 package org.teilen.client.gui;
 
+import org.teilen.common.domain.FileContent;
 import org.teilen.common.domain.RoomContent;
 import org.teilen.common.domain.TextContent;
 
 import javax.swing.*;
+import javax.swing.border.TitledBorder;
+import java.awt.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 public class DayPanel extends JPanel {
+    private final Integer ownerId;
     private LocalDate date;
     private final List<RoomContent> roomContents;
-    JLabel dateLabel;
     private boolean stateChanged;
     private List<RoomContent> tmpRoomContent;
+    private final TitledBorder titledBorder;
 
-    public DayPanel(LocalDate date, List<RoomContent> roomContents) {
+    public DayPanel(Integer ownerId, LocalDate date, List<RoomContent> roomContents) {
+        this.ownerId = ownerId;
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         this.date = date;
         this.roomContents = roomContents;
         this.tmpRoomContent = new ArrayList<>();
-        this.dateLabel = new JLabel(this.date.toString());
-        this.add(dateLabel, 0);
 
+        this.titledBorder = new TitledBorder(this.date.toString());
+        titledBorder.setTitleJustification(TitledBorder.CENTER);
+        titledBorder.setTitlePosition(TitledBorder.TOP);
+        this.setBorder(titledBorder);
         this.stateChanged = true;
 
     }
 
-    public DayPanel(LocalDate date, RoomContent roomContent) {
+    public DayPanel(Integer ownerId, LocalDate date, RoomContent roomContent) {
+        this.ownerId = ownerId;
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         this.date = date;
         this.roomContents = new ArrayList<>();
         this.tmpRoomContent = new ArrayList<>();
-
         this.roomContents.add(roomContent);
-        this.dateLabel = new JLabel(this.date.toString());
-        this.add(dateLabel, 0);
 
+        this.titledBorder = new TitledBorder(this.date.toString());
+        titledBorder.setTitleJustification(TitledBorder.CENTER);
+        titledBorder.setTitlePosition(TitledBorder.TOP);
+        this.setBorder(titledBorder);
         this.stateChanged = true;
     }
 
@@ -83,9 +92,15 @@ public class DayPanel extends JPanel {
                     RoomContent roomContent = tmpRoomContent.get(i);
                     if (roomContent instanceof TextContent) {
                         TextContent textContent = (TextContent) roomContent;
-                        TextLabel textLabel = new TextLabel(textContent);
-                        textLabel.setHorizontalAlignment(SwingConstants.LEFT);
-                        this.add(textLabel);
+                        Integer creatorId = textContent.getCreatorId();
+
+                        RowContent contentBox = null;
+                        if (creatorId != null && creatorId.intValue() == ownerId.intValue())
+                            contentBox = new RowContent(i, true, textContent);
+                        else
+                            contentBox = new RowContent(i, false, textContent);
+
+                        this.add(contentBox);
                     }
                 }
                 tmpRoomContent.clear();
@@ -93,5 +108,49 @@ public class DayPanel extends JPanel {
             }
         }
     }
+
+}
+
+class RowContent extends JPanel {
+    int index;
+    boolean isOwned;
+    RoomContent roomContent;
+
+    JLabel contentLabel;
+
+    public RowContent(int index, boolean isOwned, TextContent textContent) {
+        this.index = index;
+        this.isOwned = isOwned;
+        this.roomContent = textContent;
+
+        if (isOwned) {
+            this.setLayout(new FlowLayout(FlowLayout.RIGHT));
+            this.contentLabel = new JLabel(prepareText(textContent.getText()));
+            this.contentLabel.setOpaque(true);
+            this.contentLabel.setBackground(new Color(20, 130, 249));
+            this.contentLabel.setForeground(Color.white);
+
+        } else {
+            this.setLayout(new FlowLayout(FlowLayout.LEFT));
+            this.contentLabel = new JLabel(prepareText(textContent.getText()));
+            this.contentLabel.setOpaque(true);
+            this.contentLabel.setBackground(new Color(200, 213, 228));
+            this.contentLabel.setForeground(Color.BLACK);
+
+        }
+        this.add(contentLabel);
+
+    }
+
+    public RowContent(int index, boolean isOwned, FileContent fileContent) {
+        this.index = index;
+        this.isOwned = isOwned;
+        this.roomContent = fileContent;
+    }
+
+    private String prepareText(String text) {
+        return "    " + text + "    ";
+    }
+
 
 }
