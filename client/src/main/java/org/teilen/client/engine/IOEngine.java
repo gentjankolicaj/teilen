@@ -76,11 +76,11 @@ public class IOEngine implements Runnable {
                                     }
                                 }
                                 Packet packet = (Packet) inPacket;
-                                out.writeObject(firstResponse);
-                                out.flush();
                                 packets.add(packet);
-                                System.out.println("Client : received from server " + packet + ", client-response " + firstResponse);
+                                LogUtil.info("Client : received from server " + packet + ", client-response " + firstResponse);
                             }
+                            out.writeObject(firstResponse);
+                            out.flush();
                             PacketQueue.writeIn(packets);
                         }
 
@@ -114,29 +114,28 @@ public class IOEngine implements Runnable {
                                 for (int i = 0; i < clientPacketsNr; i++) {
                                     Packet packet = clientPackets.get(i);
                                     out.writeObject(packet);
-                                    out.flush();
-                                    Object outPacket = in.readObject();
-                                    start = System.currentTimeMillis();
-                                    diff = start;
-                                    while (outPacket == null) {
-                                        outPacket = in.readObject();
-                                        diff = System.currentTimeMillis();
-                                        if (diff - start <= readWriteTimeout) {
-                                            LogUtil.info("Client : - " + i + " failed to sent packet to server " + packet + ", server-response " + outPacket + ".Sending stopped.Timeout : " + (diff - start));
-                                            break Outer;
-                                        }
-                                    }
-
-                                    Response packetResponse = null;
-                                    if (outPacket instanceof Response) {
-                                        packetResponse = (Response) outPacket;
-                                        System.out.println("Client : - " + i + " sent packet " + packet + ", server-response " + packetResponse);
-                                    }
-                                    if (!packetResponse.getStatus().name().equals(Status.OK.name())) {
-                                        System.out.println("Client : stopped sending packets , server-response " + packetResponse);
+                                }
+                                out.flush();
+                                Object outPacket = in.readObject();
+                                start = System.currentTimeMillis();
+                                diff = start;
+                                while (outPacket == null) {
+                                    outPacket = in.readObject();
+                                    diff = System.currentTimeMillis();
+                                    if (diff - start <= readWriteTimeout) {
+                                        LogUtil.info("Client : -failed to sent packet to server , server-response " + outPacket + ".Sending stopped.Timeout : " + (diff - start));
                                         break;
                                     }
                                 }
+
+                                Response packetResponse = null;
+                                if (outPacket instanceof Response) {
+                                    packetResponse = (Response) outPacket;
+                                    LogUtil.info("Client : - sent packet , server-response " + packetResponse);
+                                } else {
+                                    LogUtil.info("Client : stopped sending packets , server-response " + packetResponse);
+                                }
+
                             }
                         }
                     } catch (Exception e) {

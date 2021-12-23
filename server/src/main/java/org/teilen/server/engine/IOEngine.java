@@ -125,29 +125,28 @@ public class IOEngine extends Thread {
                                     for (int j = 0; j < serverPacketsNr; j++) {
                                         Packet packet = serverPackets.get(j);
                                         out.writeObject(packet);
-                                        out.flush();
-                                        Object outPacket = in.readObject();
-                                        start = System.currentTimeMillis();
-                                        diff = start;
-                                        while (outPacket == null) {
-                                            outPacket = in.readObject();
-                                            diff = System.currentTimeMillis();
-                                            if (diff - start <= readWriteTimeout) {
-                                                LogUtil.info("Server : - " + j + " failed to sent packet to client " + packet + ", client-response " + outPacket + ".Sending stopped.Timeout : " + (diff - start));
-                                                break Outer;
-                                            }
-                                        }
-                                        Response packetResponse = null;
-                                        if (outPacket instanceof Response) {
-                                            packetResponse = (Response) outPacket;
-                                            LogUtil.info("Server : - " + j + " sent packet " + packet + ", client-response " + packetResponse);
-                                        }
-                                        if (!packetResponse.getStatus().name().equals(Status.OK.name())) {
-                                            LogUtil.info("Server : stopped sending packets , client-response " + packetResponse);
+                                    }
+                                    out.flush();
+                                    Object outPacket = in.readObject();
+                                    start = System.currentTimeMillis();
+                                    diff = start;
+                                    while (outPacket == null) {
+                                        outPacket = in.readObject();
+                                        diff = System.currentTimeMillis();
+                                        if (diff - start <= readWriteTimeout) {
+                                            LogUtil.info("Server : - failed to sent packet to client , client-response " + outPacket + ".Sending stopped.Timeout : " + (diff - start));
                                             break;
                                         }
                                     }
+                                    Response packetResponse = null;
+                                    if (outPacket instanceof Response) {
+                                        packetResponse = (Response) outPacket;
+                                        LogUtil.info("Server : - client-response " + packetResponse);
+                                    } else {
+                                        LogUtil.warn("Server : stopped sending packets , client-response " + outPacket);
+                                    }
                                 }
+
                             } else
                                 inObject = null;
 
@@ -187,11 +186,11 @@ public class IOEngine extends Thread {
                                         }
                                     }
                                     Packet packet = (Packet) inPacket;
-                                    out.writeObject(secondResponse);
-                                    out.flush();
                                     clientPackets.add(packet);
-                                    LogUtil.info("Server : - " + k + " received from client " + packet + ", server-response " + secondResponse);
                                 }
+                                out.writeObject(secondResponse);
+                                out.flush();
+                                LogUtil.info("Server : -  received from client , server-response " + secondResponse);
                                 PacketQueue.writeIn(clientPackets);
                             }
 
@@ -213,7 +212,6 @@ public class IOEngine extends Thread {
                     }
 
                     removeClientSockets(removeClientsIndex);
-
                     LogUtil.info("IOE: finished.");
                     Thread.sleep(threadSleep);
                 }
