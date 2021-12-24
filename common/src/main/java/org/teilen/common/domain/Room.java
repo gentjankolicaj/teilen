@@ -154,6 +154,7 @@ public class Room implements Serializable {
     public void updateRoomContentByGlobal(RoomContent roomContent) {
         if (contents == null) {
             contents = new ArrayList<>();
+            contents.add(roomContent);
         } else if (contents.size() == 0) {
             contents.add(roomContent);
         } else {
@@ -172,6 +173,7 @@ public class Room implements Serializable {
     public void updateRoomContentByLocal(RoomContent roomContent) {
         if (contents == null) {
             contents = new ArrayList<>();
+            contents.add(roomContent);
         } else if (contents.size() == 0) {
             contents.add(roomContent);
         } else {
@@ -190,6 +192,7 @@ public class Room implements Serializable {
     public void updateRoomContentsByGlobal(List<RoomContent> roomContents) {
         if (contents == null) {
             contents = new ArrayList<>();
+            contents.addAll(roomContents);
         } else if (contents.size() == 0) {
             contents.addAll(roomContents);
         } else {

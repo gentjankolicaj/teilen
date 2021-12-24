@@ -27,24 +27,23 @@ public class DayPanel extends JPanel {
         this.tmpRoomContent = new ArrayList<>();
 
         this.titledBorder = new TitledBorder(this.date.toString());
-        titledBorder.setTitleJustification(TitledBorder.CENTER);
-        titledBorder.setTitlePosition(TitledBorder.TOP);
+        this.titledBorder.setTitleJustification(TitledBorder.CENTER);
+        this.titledBorder.setTitlePosition(TitledBorder.TOP);
         this.setBorder(titledBorder);
         this.stateChanged = true;
 
     }
 
-    public DayPanel(Integer ownerId, LocalDate date, RoomContent roomContent) {
+    public DayPanel(Integer ownerId, LocalDate date) {
         this.ownerId = ownerId;
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         this.date = date;
         this.roomContents = new ArrayList<>();
         this.tmpRoomContent = new ArrayList<>();
-        this.roomContents.add(roomContent);
 
         this.titledBorder = new TitledBorder(this.date.toString());
-        titledBorder.setTitleJustification(TitledBorder.CENTER);
-        titledBorder.setTitlePosition(TitledBorder.TOP);
+        this.titledBorder.setTitleJustification(TitledBorder.CENTER);
+        this.titledBorder.setTitlePosition(TitledBorder.TOP);
         this.setBorder(titledBorder);
         this.stateChanged = true;
     }

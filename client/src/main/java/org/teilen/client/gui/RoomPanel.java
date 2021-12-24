@@ -1,8 +1,10 @@
 package org.teilen.client.gui;
 
+import org.teilen.client.global.GlobalConfig;
 import org.teilen.client.queue.PacketQueue;
 import org.teilen.client.repository.ClientRepository;
 import org.teilen.client.repository.RoomRepository;
+import org.teilen.client.util.LogUtil;
 import org.teilen.common.domain.Client;
 import org.teilen.common.domain.Room;
 import org.teilen.common.domain.RoomContent;
@@ -28,6 +30,8 @@ public class RoomPanel extends JPanel {
     BodyPanel bodyPanel;
     FooterPanel footerPanel;
     JLabel noChatLbl;
+
+    long lastRefreshTime = System.currentTimeMillis();
 
     public RoomPanel() {
         this.setLayout(new BorderLayout(0, 0));
@@ -56,16 +60,21 @@ public class RoomPanel extends JPanel {
 
 
     public void validateGui() {
-        if (this.headerPanel != null) {
-            this.headerPanel.revalidateGui();
+        long currentTime = System.currentTimeMillis();
+        if (currentTime - lastRefreshTime > GlobalConfig.roomGuiRefreshThreshold) {
+            if (this.headerPanel != null) {
+                this.headerPanel.revalidateGui();
+            }
+            if (this.bodyPanel != null) {
+                this.bodyPanel.revalidateGui();
+            }
+            if (this.footerPanel != null) {
+                this.footerPanel.revalidateGui();
+            }
+            this.validate();
+            LogUtil.info("Room gui refresh time : " + currentTime + " last refresh time : " + lastRefreshTime);
+            lastRefreshTime = System.currentTimeMillis();
         }
-        if (this.bodyPanel != null) {
-            this.bodyPanel.revalidateGui();
-        }
-        if (this.footerPanel != null) {
-            this.footerPanel.revalidateGui();
-        }
-        this.validate();
     }
 
 
@@ -189,18 +198,29 @@ public class RoomPanel extends JPanel {
                         //create missing day panels
                         for (int i = 0; i < roomContents.size(); i++) {
                             RoomContent roomContent = roomContents.get(i);
-                            LocalDate contentDate = roomContent.getCreatedDate();
-                            if (contentDate != null) {
-                                for (int j = 0; j < dayPanels.size(); j++) {
-                                    DayPanel dayPanel = dayPanels.get(i);
-                                    LocalDate existingDate = dayPanel.getDate();
-                                    if (!existingDate.equals(contentDate)) {
-                                        DayPanel newDayPanel = new DayPanel(ownerId, contentDate, roomContent);
-                                        dayPanels.add(newDayPanel);
-                                        break;
-                                    } else {
-                                        dayPanel.addRoomContent(roomContent);
+                            LocalDate createdDate = roomContent.getCreatedDate();
+                            if (createdDate != null) {
+                                if (dayPanels.size() != 0) {
+                                    boolean foundDate = false;
+                                    for (int j = 0; j < dayPanels.size(); j++) {
+                                        DayPanel dayPanel = dayPanels.get(j);
+                                        LocalDate existingDate = dayPanel.getDate();
+                                        if (existingDate.equals(createdDate)) {
+                                            dayPanel.addRoomContent(roomContent);
+                                            foundDate = true;
+                                            break;
+                                        }
                                     }
+                                    if (!foundDate) {
+                                        DayPanel dayPanel = new DayPanel(ownerId, createdDate);
+                                        dayPanel.addRoomContent(roomContent);
+                                        dayPanels.add(dayPanel);
+                                    }
+
+                                } else {
+                                    DayPanel dayPanel = new DayPanel(ownerId, createdDate);
+                                    dayPanel.addRoomContent(roomContent);
+                                    dayPanels.add(dayPanel);
                                 }
                             }
                         }
@@ -220,7 +240,7 @@ public class RoomPanel extends JPanel {
             }
         }
 
-
+        //todo: bugfix :
         private void revalidateGui() {
             if (ownerId != null && clientId != null) {
                 Room room = RoomRepository.findRoomByClientIds(ownerId, clientId);
@@ -235,25 +255,29 @@ public class RoomPanel extends JPanel {
                         //create missing day panels
                         for (int i = 0; i < roomContents.size(); i++) {
                             RoomContent roomContent = roomContents.get(i);
-                            LocalDate contentDate = roomContent.getCreatedDate();
-                            if (contentDate != null) {
+                            LocalDate createdDate = roomContent.getCreatedDate();
+                            if (createdDate != null) {
                                 if (dayPanels.size() != 0) {
-                                    int j = 0;
-                                    do {
+                                    boolean foundDate = false;
+                                    for (int j = 0; j < dayPanels.size(); j++) {
                                         DayPanel dayPanel = dayPanels.get(j);
                                         LocalDate existingDate = dayPanel.getDate();
-                                        if (!existingDate.equals(contentDate)) {
-                                            DayPanel newDayPanel = new DayPanel(ownerId, contentDate, roomContent);
-                                            dayPanels.add(newDayPanel);
-                                            break;
-                                        } else {
+                                        if (existingDate.equals(createdDate)) {
                                             dayPanel.addRoomContent(roomContent);
+                                            foundDate = true;
+                                            break;
                                         }
-                                        j++;
-                                    } while (j < dayPanels.size());
+                                    }
+                                    if (!foundDate) {
+                                        DayPanel dayPanel = new DayPanel(ownerId, createdDate);
+                                        dayPanel.addRoomContent(roomContent);
+                                        dayPanels.add(dayPanel);
+                                    }
+
                                 } else {
-                                    DayPanel newDayPanel = new DayPanel(ownerId, contentDate, roomContent);
-                                    dayPanels.add(newDayPanel);
+                                    DayPanel dayPanel = new DayPanel(ownerId, createdDate);
+                                    dayPanel.addRoomContent(roomContent);
+                                    dayPanels.add(dayPanel);
                                 }
                             }
                         }

@@ -8,4 +8,6 @@ public class GlobalConfig {
     public static int width = 800;
     public static int height = 700;
 
+    public static long roomGuiRefreshThreshold = 500; //millis
+
 }
