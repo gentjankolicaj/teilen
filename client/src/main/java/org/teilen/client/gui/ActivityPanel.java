@@ -12,7 +12,7 @@ public class ActivityPanel extends JPanel {
     private RoomPanel roomPanel;
 
     public ActivityPanel() {
-        this.setPreferredSize(new Dimension(GlobalConfig.width, (int) (GlobalConfig.height * 0.55)));
+        this.setPreferredSize(new Dimension(GlobalConfig.clientWidth, (int) (GlobalConfig.clientHeight * 0.55)));
         this.setBorder(new LineBorder(new Color(0, 0, 0)));
         this.setLayout(new BorderLayout(0, 0));
         this.realtimePanel = new RealtimePanel(this);
