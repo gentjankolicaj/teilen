@@ -4,12 +4,16 @@ import org.teilen.common.domain.Client;
 import org.teilen.common.domain.Room;
 import org.teilen.common.domain.RoomContent;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class RoomRepository {
 
-    static final Map<Integer, Room> rooms = new HashMap<>();
+    static final Map<Integer, Room> rooms = new ConcurrentHashMap<>();
 
 
     public static Room findRoomById(Integer roomId) {
@@ -28,7 +32,6 @@ public class RoomRepository {
         Set<Integer> clientIds = new TreeSet<>();
         clientIds.add(firstClientId);
         clientIds.add(secondClientId);
-
         Room room = null;
         search:
         for (Map.Entry<Integer, Room> entry : rooms.entrySet()) {

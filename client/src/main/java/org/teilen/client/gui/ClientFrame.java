@@ -9,6 +9,8 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
 public class ClientFrame extends JFrame {
+	static ClientFrame mainFrame;
+
 	private final JPanel contentPane;
 	private final InfoPanel infoPanel;
 	private final ActivityPanel activityPanel;
@@ -22,11 +24,11 @@ public class ClientFrame extends JFrame {
 	public ClientFrame(IOEngine ioEngine, ActivityEngine activityEngine) {
 		this.setTitle("Teilen ~ CLIENT");
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		this.setBounds(GlobalConfig.xBound, GlobalConfig.yBound, GlobalConfig.width, GlobalConfig.height);
+		this.setBounds(GlobalConfig.xBound, GlobalConfig.yBound, GlobalConfig.clientWidth, GlobalConfig.clientHeight);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		contentPane.setLayout(new BorderLayout(0, 0));
-		setContentPane(contentPane);
+		this.setContentPane(contentPane);
 
 		this.infoPanel = new InfoPanel(ioEngine);
 		contentPane.add(infoPanel, BorderLayout.NORTH);
@@ -44,6 +46,7 @@ public class ClientFrame extends JFrame {
 		//Set panels to be used by activity engine
 		activityEngine.setActivityPanel(activityPanel);
 		activityEngine.setInfoPanel(infoPanel);
+		mainFrame = this;
 	}
 
 }

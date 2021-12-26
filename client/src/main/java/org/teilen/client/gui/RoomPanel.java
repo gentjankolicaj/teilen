@@ -1,6 +1,7 @@
 package org.teilen.client.gui;
 
 import org.teilen.client.global.GlobalConfig;
+import org.teilen.client.gui.webcam.WebcamFrame;
 import org.teilen.client.queue.PacketQueue;
 import org.teilen.client.repository.ClientRepository;
 import org.teilen.client.repository.RoomRepository;
@@ -20,6 +21,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.*;
@@ -30,6 +33,7 @@ public class RoomPanel extends JPanel {
     BodyPanel bodyPanel;
     FooterPanel footerPanel;
     JLabel noChatLbl;
+    WebcamFrame webcamFrame;
 
     long lastRefreshTime = System.currentTimeMillis();
 
@@ -71,6 +75,10 @@ public class RoomPanel extends JPanel {
             if (this.footerPanel != null) {
                 this.footerPanel.revalidateGui();
             }
+            if (webcamFrame != null) {
+                this.webcamFrame.validateGui();
+            }
+
             this.validate();
             LogUtil.info("Room gui refresh time : " + currentTime + " last refresh time : " + lastRefreshTime);
             lastRefreshTime = System.currentTimeMillis();
@@ -130,6 +138,7 @@ public class RoomPanel extends JPanel {
             this.add(centerPanel, BorderLayout.CENTER);
 
             //Add contentPane to parent panel
+            addComponentListeners();
         }
 
 
@@ -156,6 +165,36 @@ public class RoomPanel extends JPanel {
         public void revalidateGui() {
             String recentUsername = getUsername(ClientRepository.findClientById(clientId));
             usernameLbl.setText(recentUsername);
+        }
+
+        private void addComponentListeners() {
+            this.cameraLbl.addMouseListener(new MouseListener() {
+                @Override
+                public void mouseClicked(MouseEvent mouseEvent) {
+                    webcamFrame = new WebcamFrame();
+
+                }
+
+                @Override
+                public void mousePressed(MouseEvent mouseEvent) {
+
+                }
+
+                @Override
+                public void mouseReleased(MouseEvent mouseEvent) {
+
+                }
+
+                @Override
+                public void mouseEntered(MouseEvent mouseEvent) {
+
+                }
+
+                @Override
+                public void mouseExited(MouseEvent mouseEvent) {
+
+                }
+            });
         }
     }
 
@@ -240,7 +279,6 @@ public class RoomPanel extends JPanel {
             }
         }
 
-        //todo: bugfix :
         private void revalidateGui() {
             if (ownerId != null && clientId != null) {
                 Room room = RoomRepository.findRoomByClientIds(ownerId, clientId);
@@ -383,6 +421,7 @@ public class RoomPanel extends JPanel {
             });
         }
 
+        //todo: bugfix sometimes messages are not sent after pressing sent
         private void sendMessage(String message) {
             Room room = RoomRepository.findRoomByClientIds(ownerId, clientId);
             if (room != null) {

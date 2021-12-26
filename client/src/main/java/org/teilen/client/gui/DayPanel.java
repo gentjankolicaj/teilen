@@ -138,7 +138,6 @@ class RowContent extends JPanel {
 
         }
         this.add(contentLabel);
-
     }
 
     public RowContent(int index, boolean isOwned, FileContent fileContent) {
