@@ -9,7 +9,7 @@ import org.teilen.client.util.LogUtil;
 import org.teilen.common.domain.Client;
 import org.teilen.common.packet.base.Body;
 import org.teilen.common.packet.base.Header;
-import org.teilen.common.packet.base.content_wrapper.ClientInfoWrapper;
+import org.teilen.common.packet.base.wrapper.ClientInfoWrapper;
 import org.teilen.common.packet.meta.ClientOp;
 import org.teilen.common.packet.meta.ClientPacket;
 
@@ -186,12 +186,12 @@ public class InfoPanel extends JPanel {
         this.connectBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                int timeout = getTimeout();
-                int port = getPort();
-                String host = getHost();
-                String username = getUsername();
-                LogUtil.info("Connect button pressed.");
                 try {
+                    int timeout = getTimeout();
+                    int port = getPort();
+                    String host = getHost();
+                    String username = getUsername();
+                    LogUtil.info("Connect button pressed.");
                     ioEngine.connect(new SocketMeta(host, port, timeout, username));
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -203,8 +203,8 @@ public class InfoPanel extends JPanel {
         this.disconnectBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                LogUtil.info("Disconnect button pressed.");
                 try {
+                    LogUtil.info("Disconnect button pressed.");
                     ioEngine.disconnect();
                     removeOwnerAndClients();
                 } catch (Exception e) {
@@ -300,9 +300,6 @@ public class InfoPanel extends JPanel {
         }
     }
 
-    public void validateOwnerGui() {
-        updateOwnerMeta();
-    }
 
     private void removeOwnerAndClients() {
         removeExistingOwner();
@@ -322,7 +319,7 @@ public class InfoPanel extends JPanel {
     }
 
     public void validateGui() {
-        // to do other gui tree validation
+        updateOwnerMeta();
     }
 
 

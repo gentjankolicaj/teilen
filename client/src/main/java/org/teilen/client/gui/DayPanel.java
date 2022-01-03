@@ -89,18 +89,16 @@ public class DayPanel extends JPanel {
                 roomContents.addAll(tmpRoomContent);
                 for (int i = 0; i < tmpRoomContent.size(); i++) {
                     RoomContent roomContent = tmpRoomContent.get(i);
-                    if (roomContent instanceof TextContent) {
-                        TextContent textContent = (TextContent) roomContent;
-                        Integer creatorId = textContent.getCreatorId();
+                    Integer creatorId = roomContent.getCreatorId();
 
                         RowContent contentBox = null;
                         if (creatorId != null && creatorId.intValue() == ownerId.intValue())
-                            contentBox = new RowContent(i, true, textContent);
+                            contentBox = new RowContent(true, roomContent);
                         else
-                            contentBox = new RowContent(i, false, textContent);
+                            contentBox = new RowContent(false, roomContent);
 
                         this.add(contentBox);
-                    }
+
                 }
                 tmpRoomContent.clear();
                 this.validate();
@@ -111,39 +109,62 @@ public class DayPanel extends JPanel {
 }
 
 class RowContent extends JPanel {
-    int index;
     boolean isOwned;
     RoomContent roomContent;
+    JLabel textLbl;
+    JLabel fileLbl;
 
-    JLabel contentLabel;
 
-    public RowContent(int index, boolean isOwned, TextContent textContent) {
-        this.index = index;
+    public RowContent(boolean isOwned, RoomContent roomContent) {
         this.isOwned = isOwned;
-        this.roomContent = textContent;
+        this.roomContent = roomContent;
+        if (roomContent instanceof TextContent) {
+            TextContent textContent = (TextContent) roomContent;
+            if (isOwned) {
+                this.setLayout(new FlowLayout(FlowLayout.RIGHT));
+                this.textLbl = new JLabel(prepareText(textContent.getText()));
+                this.textLbl.setOpaque(true);
+                this.textLbl.setBackground(new Color(20, 130, 249));
+                this.textLbl.setForeground(Color.white);
 
-        if (isOwned) {
-            this.setLayout(new FlowLayout(FlowLayout.RIGHT));
-            this.contentLabel = new JLabel(prepareText(textContent.getText()));
-            this.contentLabel.setOpaque(true);
-            this.contentLabel.setBackground(new Color(20, 130, 249));
-            this.contentLabel.setForeground(Color.white);
+            } else {
+                this.setLayout(new FlowLayout(FlowLayout.LEFT));
+                this.textLbl = new JLabel(prepareText(textContent.getText()));
+                this.textLbl.setOpaque(true);
+                this.textLbl.setBackground(new Color(200, 213, 228));
+                this.textLbl.setForeground(Color.BLACK);
 
-        } else {
-            this.setLayout(new FlowLayout(FlowLayout.LEFT));
-            this.contentLabel = new JLabel(prepareText(textContent.getText()));
-            this.contentLabel.setOpaque(true);
-            this.contentLabel.setBackground(new Color(200, 213, 228));
-            this.contentLabel.setForeground(Color.BLACK);
-
+            }
+            this.add(textLbl);
+        } else if (roomContent instanceof FileContent) {
+            FileContent fileContent = (FileContent) roomContent;
+            String fileName = fileContent.getFileName();
+            int fileSize = fileContent.getArray() != null ? fileContent.getArray().length : 0;
+            if (isOwned) {
+                this.setLayout(new FlowLayout(FlowLayout.RIGHT));
+            } else {
+                this.setLayout(new FlowLayout(FlowLayout.LEFT));
+            }
+            this.fileLbl = new JLabel();
+            this.fileLbl.setText(prepareFileName(fileName, fileSize));
+            this.fileLbl.setIcon(getIcon());
+            this.fileLbl.setHorizontalTextPosition(JLabel.RIGHT);
+            this.add(fileLbl);
         }
-        this.add(contentLabel);
+
     }
 
-    public RowContent(int index, boolean isOwned, FileContent fileContent) {
-        this.index = index;
-        this.isOwned = isOwned;
-        this.roomContent = fileContent;
+
+    private static ImageIcon getIcon() {
+        return new ImageIcon(RowContent.class.getClassLoader().getResource("icons8-file-20.png"));
+    }
+
+    private String prepareFileName(String fileName, int fileSize) {
+        if (fileName != null) {
+            return fileName + " ~ " + fileSize + " b";
+        } else {
+            return "tmp ~ " + fileSize + " b";
+        }
     }
 
     private String prepareText(String text) {

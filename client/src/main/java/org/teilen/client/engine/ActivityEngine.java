@@ -1,7 +1,7 @@
 package org.teilen.client.engine;
 
 import org.teilen.client.domain.ConnState;
-import org.teilen.client.domain.GuiPanel;
+import org.teilen.client.global.GlobalConfig;
 import org.teilen.client.gui.ActivityPanel;
 import org.teilen.client.gui.InfoPanel;
 import org.teilen.client.queue.PacketQueue;
@@ -16,21 +16,19 @@ import org.teilen.common.packet.base.Body;
 import org.teilen.common.packet.base.Content;
 import org.teilen.common.packet.base.Header;
 import org.teilen.common.packet.base.Packet;
-import org.teilen.common.packet.base.content_wrapper.ClientInfoWrapper;
-import org.teilen.common.packet.base.content_wrapper.RoomClientsWrapper;
-import org.teilen.common.packet.base.content_wrapper.RoomContentWrapper;
-import org.teilen.common.packet.base.content_wrapper.RoomWrapper;
-import org.teilen.common.packet.media.*;
+import org.teilen.common.packet.base.wrapper.ClientInfoWrapper;
+import org.teilen.common.packet.base.wrapper.RoomClientsWrapper;
+import org.teilen.common.packet.base.wrapper.RoomContentWrapper;
+import org.teilen.common.packet.base.wrapper.RoomWrapper;
+import org.teilen.common.packet.media.MediaPacket;
 import org.teilen.common.packet.meta.*;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
+
 
 public class ActivityEngine implements Runnable {
-    private static final int threadSleep = 300; //millis
-    private static final int packetNumber = 10;
 
     //Panels to reflect changes
     private ActivityPanel activityPanel;
@@ -52,31 +50,18 @@ public class ActivityEngine implements Runnable {
         while (true) {
             try {
                 if (activityPanel != null) {
-                    List<Packet> packets = PacketQueue.readIn(packetNumber);
+                    List<Packet> packets = PacketQueue.readIn(GlobalConfig.aePacketNumber);
+
                     if (packets != null && packets.size() != 0) {
                         //process in-queue packets and put them into out-queue
-                        Set<GuiPanel> guiPanelSet = processPackets(packets);
-
-                        //Process changes at gui
-                        if (guiPanelSet != null) {
-                            for (GuiPanel guiPanel : guiPanelSet) {
-                                if (guiPanel.name().equals(GuiPanel.ACTIVITY.name())) {
-                                    activityPanel.validateGui();
-                                    infoPanel.validateOwnerGui();
-                                } else if (guiPanel.name().equals(GuiPanel.INFO.name())) {
-                                    infoPanel.validateGui();
-                                }
-                            }
-                        }
-                    } else {
-                        activityPanel.validateGui();
-                        infoPanel.validateGui();
+                        processPackets(packets);
                     }
-                } else {
-                    long otherSleep = (long) (threadSleep - (threadSleep * 0.9));
-                    Thread.sleep(otherSleep);
+
+                    //Process changes at gui
+                    activityPanel.validateGui();
+                    infoPanel.validateGui();
                 }
-                Thread.sleep(threadSleep);
+                Thread.sleep(GlobalConfig.aeThreadSleep);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -84,28 +69,18 @@ public class ActivityEngine implements Runnable {
     }
 
 
-    private Set<GuiPanel> processPackets(List<Packet> packets) {
-        Set<GuiPanel> guiPanelSet = new TreeSet<>();
+    private void processPackets(List<Packet> packets) {
         List<Packet> processedPackets = new ArrayList<>();
         for (int i = 0; i < packets.size(); i++) {
             Packet packet = packets.get(i);
             if (packet instanceof MediaPacket) {
-                if (packet instanceof TextPacket) {
-
-                } else if (packet instanceof SoundPacket) {
-
-                } else if (packet instanceof VideoPacket) {
-
-                } else if (packet instanceof FilePacket) {
-
-                }
+                //todo:
             } else {
                 if (packet instanceof ConnPacket) {
                     ConnPacket connPacket = (ConnPacket) packet;
-                    guiPanelSet.add(GuiPanel.ACTIVITY);
                     if (connPacket.connOp != null) {
                         ConnRepository.updateConnState(connPacket.connOp);
-                        if (ConnRepository.findConnState().name().equals(ConnState.OFFLINE)) {
+                        if (ConnRepository.findConnState().name().equals(ConnState.OFFLINE.name())) {
                             ClientRepository.deleteAll();
                         }
                     }
@@ -119,7 +94,6 @@ public class ActivityEngine implements Runnable {
                     if (header != null) {
                         originId = header.getOriginId();
                     }
-                    guiPanelSet.add(GuiPanel.ACTIVITY);
                     if (roomPacket.roomOp.name().equals(RoomOp.ROOM_READ.name())) {
                         //todo
                     } else if (roomPacket.roomOp.name().equals(RoomOp.ROOM_CREATE.name())) {
@@ -180,7 +154,6 @@ public class ActivityEngine implements Runnable {
 
                 } else if (packet instanceof ClientPacket) {
                     ClientPacket clientPacket = (ClientPacket) packet;
-                    guiPanelSet.add(GuiPanel.ACTIVITY);
                     if (clientPacket.getClientOp().name().equals(ClientOp.CLIENT_CREATE.name())) {
                         Body body = clientPacket.getBody();
                         Header header = clientPacket.getHeader();
@@ -221,9 +194,7 @@ public class ActivityEngine implements Runnable {
                 }
             }
         }
-
         PacketQueue.writeOut(processedPackets);
-        return guiPanelSet;
     }
 
 

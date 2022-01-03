@@ -2,6 +2,7 @@ package org.teilen.client.engine;
 
 import org.teilen.client.domain.SocketMeta;
 import org.teilen.client.domain.SocketWrapper;
+import org.teilen.client.global.GlobalConfig;
 import org.teilen.client.queue.PacketQueue;
 import org.teilen.client.util.LogUtil;
 import org.teilen.common.packet.base.Packet;
@@ -19,10 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class IOEngine implements Runnable {
-    private static final int threadSleep = 2000; //millis
-    private static final int packetNumber = 5;
-    private static final long readWriteTimeout = 100;
-
     private Boolean connected = false;
     private SocketWrapper socketWrapper;
     private ObjectOutputStream out;
@@ -48,7 +45,7 @@ public class IOEngine implements Runnable {
                         while (inObject == null) {
                             inObject = in.readObject();
                             diff = System.currentTimeMillis();
-                            if (diff - start <= readWriteTimeout) {
+                            if (diff - start <= GlobalConfig.ioRWTimeout) {
                                 LogUtil.info("Client : - failed to receive Proposal-Request from server.Timeout " + (diff - start));
                                 break;
                             }
@@ -70,7 +67,7 @@ public class IOEngine implements Runnable {
                                 while (inPacket == null) {
                                     inPacket = in.readObject();
                                     diff = System.currentTimeMillis();
-                                    if (diff - start <= readWriteTimeout) {
+                                    if (diff - start <= GlobalConfig.ioRWTimeout) {
                                         LogUtil.info("Client : - " + i + " failed to receive packet from server.Receiving stopped.Timeout : " + (diff - start));
                                         break Outer;
                                     }
@@ -86,7 +83,7 @@ public class IOEngine implements Runnable {
 
 
                         //Sending from client to server
-                        List<Packet> clientPackets = PacketQueue.readOut(packetNumber);
+                        List<Packet> clientPackets = PacketQueue.readOut(GlobalConfig.ioPacketNumber);
                         System.out.println("Client : packets " + clientPackets);
                         int clientPacketsNr = clientPackets != null ? clientPackets.size() : 0;
                         Request secondRequest = new Request(0, clientPacketsNr);
@@ -99,7 +96,7 @@ public class IOEngine implements Runnable {
                         while (inObject == null) {
                             inObject = in.readObject();
                             diff = System.currentTimeMillis();
-                            if (diff - start <= readWriteTimeout) {
+                            if (diff - start <= GlobalConfig.ioRWTimeout) {
                                 LogUtil.info("Client : - failed to receive Request-Response from server.Timeout " + (diff - start));
                                 break;
                             }
@@ -122,7 +119,7 @@ public class IOEngine implements Runnable {
                                 while (outPacket == null) {
                                     outPacket = in.readObject();
                                     diff = System.currentTimeMillis();
-                                    if (diff - start <= readWriteTimeout) {
+                                    if (diff - start <= GlobalConfig.ioRWTimeout) {
                                         LogUtil.info("Client : -failed to sent packet to server , server-response " + outPacket + ".Sending stopped.Timeout : " + (diff - start));
                                         break;
                                     }
@@ -142,9 +139,9 @@ public class IOEngine implements Runnable {
                         e.printStackTrace();
                         disconnect();
                     }
-                    Thread.sleep(threadSleep);
+                    Thread.sleep(GlobalConfig.ioThreadSleep);
                 }
-                Thread.sleep(threadSleep);
+                Thread.sleep(GlobalConfig.ioThreadSleep);
                 LogUtil.info("Waiting to connect to server...");
             }
         } catch (Exception e) {
@@ -154,24 +151,23 @@ public class IOEngine implements Runnable {
 
 
     //Public methods to be called from info panel buttons
-    public synchronized void connect(SocketMeta socketMeta) throws IOException {
-            if (this.connected == false) {
-                Socket socket = new Socket(socketMeta.getSocketHost(), socketMeta.getSocketPort());
-                this.socketWrapper = new SocketWrapper(socket);
-                this.connected = true;
-                LogUtil.info("Socket connected : " + this.socketWrapper);
-                PacketQueue.writeIn(new ConnPacket(ConnOp.ON));
-            }
-
+    public void connect(SocketMeta socketMeta) throws IOException {
+        if (this.connected == false) {
+            Socket socket = new Socket(socketMeta.getSocketHost(), socketMeta.getSocketPort());
+            this.socketWrapper = new SocketWrapper(socket);
+            this.connected = true;
+            LogUtil.info("Socket connected : " + this.socketWrapper);
+            PacketQueue.writeIn(new ConnPacket(ConnOp.ON));
+        }
     }
 
-    public synchronized void disconnect() throws IOException {
-            if (this.connected) {
-                this.socketWrapper.close();
-                this.connected = false;
-                LogUtil.info("Socket disconnected : " + this.socketWrapper);
-                PacketQueue.writeIn(new ConnPacket(ConnOp.OFF));
-            }
+    public void disconnect() throws IOException {
+        if (this.connected) {
+            this.socketWrapper.close();
+            this.connected = false;
+            LogUtil.info("Socket disconnected : " + this.socketWrapper);
+            PacketQueue.writeIn(new ConnPacket(ConnOp.OFF));
+        }
     }
 
 }

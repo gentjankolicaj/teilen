@@ -1,4 +1,4 @@
-package org.teilen.common.packet.base.content_wrapper;
+package org.teilen.common.packet.base.wrapper;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

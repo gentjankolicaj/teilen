@@ -1,4 +1,4 @@
-package org.teilen.common.packet.base.content_wrapper;
+package org.teilen.common.packet.base.wrapper;
 
 import lombok.Data;
 import org.teilen.common.domain.RoomContent;

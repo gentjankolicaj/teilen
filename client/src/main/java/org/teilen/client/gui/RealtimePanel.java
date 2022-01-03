@@ -12,13 +12,14 @@ public class RealtimePanel extends JPanel {
     //parent panel
     final ActivityPanel activityPanel;
 
-
     final JScrollPane userScrollPane;
     final UserPanel userPanel;
     final ListSelectionModel userSelectionModel;
 
     //server image
     private JLabel serverImage;
+
+    boolean roomOpen;
 
     public RealtimePanel(ActivityPanel activityPanel) {
         this.activityPanel = activityPanel;
@@ -47,24 +48,23 @@ public class RealtimePanel extends JPanel {
     public void setServerImageRed() {
         if (serverImage != null) {
             this.remove(serverImage);
-            this.serverImage = new JLabel("~ offline ");
-            this.serverImage.setIcon(getServerRedImageIcon());
-            this.add(serverImage, BorderLayout.NORTH);
-            this.validate();
-        } else {
-            this.serverImage = new JLabel("~ offline ");
-            this.serverImage.setIcon(getServerRedImageIcon());
-            this.add(serverImage, BorderLayout.NORTH);
         }
+        this.serverImage = new JLabel("~ offline ");
+        this.serverImage.setIcon(getServerRedImageIcon());
+        this.add(serverImage, BorderLayout.NORTH);
+        this.validate();
     }
 
     public void setServerImageGreen() {
-        this.remove(serverImage);
+        if (serverImage != null) {
+            this.remove(serverImage);
+        }
         this.serverImage = new JLabel("~ online ");
         this.serverImage.setIcon(getServerGreenImageIcon());
         this.add(serverImage, BorderLayout.NORTH);
         this.validate();
     }
+
 
     public void validateGui() {
         ConnState connState = ConnRepository.findConnState();
@@ -79,8 +79,14 @@ public class RealtimePanel extends JPanel {
         }
     }
 
+    public void setRoomOpen(boolean flag) {
+        this.roomOpen = flag;
+    }
+
+
     class SingleListSelectionHandler implements ListSelectionListener {
         Integer initClientId = null;
+
         public void valueChanged(ListSelectionEvent e) {
             ListSelectionModel lsm = (ListSelectionModel) e.getSource();
             // Find out which indexes are selected.
@@ -95,12 +101,15 @@ public class RealtimePanel extends JPanel {
             }
             Integer clientId = userPanel.getClientId(selectedIndex);
             if (clientId != null) {
-                if (initClientId == null) {
+                if (roomOpen) {
+                    if (clientId.intValue() != initClientId.intValue()) {
+                        initClientId = clientId;
+                        activityPanel.openRoomWithClient(clientId);
+                    }
+                } else {
                     initClientId = clientId;
                     activityPanel.openRoomWithClient(clientId);
-                } else if (clientId.intValue() != initClientId.intValue()) {
-                    initClientId = clientId;
-                    activityPanel.openRoomWithClient(clientId);
+                    roomOpen = true;
                 }
             }
         }

@@ -6,23 +6,23 @@ import org.teilen.client.queue.PacketQueue;
 import org.teilen.client.repository.ClientRepository;
 import org.teilen.client.repository.RoomRepository;
 import org.teilen.client.util.LogUtil;
-import org.teilen.common.domain.Client;
-import org.teilen.common.domain.Room;
-import org.teilen.common.domain.RoomContent;
-import org.teilen.common.domain.TextContent;
+import org.teilen.common.domain.*;
 import org.teilen.common.packet.base.Body;
 import org.teilen.common.packet.base.Header;
-import org.teilen.common.packet.base.content_wrapper.RoomClientsWrapper;
-import org.teilen.common.packet.base.content_wrapper.RoomContentWrapper;
+import org.teilen.common.packet.base.wrapper.RoomClientsWrapper;
+import org.teilen.common.packet.base.wrapper.RoomContentWrapper;
 import org.teilen.common.packet.meta.RoomOp;
 import org.teilen.common.packet.meta.RoomPacket;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.File;
+import java.io.FileInputStream;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.*;
@@ -65,7 +65,7 @@ public class RoomPanel extends JPanel {
 
     public void validateGui() {
         long currentTime = System.currentTimeMillis();
-        if (currentTime - lastRefreshTime > GlobalConfig.roomGuiRefreshThreshold) {
+        if (currentTime - lastRefreshTime > GlobalConfig.RPRefreshThreshold) {
             if (this.headerPanel != null) {
                 this.headerPanel.revalidateGui();
             }
@@ -172,6 +172,60 @@ public class RoomPanel extends JPanel {
                 @Override
                 public void mouseClicked(MouseEvent mouseEvent) {
                     webcamFrame = new WebcamFrame();
+                }
+
+                @Override
+                public void mousePressed(MouseEvent mouseEvent) {
+
+                }
+
+                @Override
+                public void mouseReleased(MouseEvent mouseEvent) {
+
+                }
+
+                @Override
+                public void mouseEntered(MouseEvent mouseEvent) {
+
+                }
+
+                @Override
+                public void mouseExited(MouseEvent mouseEvent) {
+
+                }
+            });
+
+            this.addUserLbl.addMouseListener(new MouseListener() {
+                @Override
+                public void mouseClicked(MouseEvent mouseEvent) {
+                    JOptionPane.showMessageDialog(HeaderPanel.this, "Functionality not implemented.", "Alert", JOptionPane.WARNING_MESSAGE);
+                }
+
+                @Override
+                public void mousePressed(MouseEvent mouseEvent) {
+
+                }
+
+                @Override
+                public void mouseReleased(MouseEvent mouseEvent) {
+
+                }
+
+                @Override
+                public void mouseEntered(MouseEvent mouseEvent) {
+
+                }
+
+                @Override
+                public void mouseExited(MouseEvent mouseEvent) {
+
+                }
+            });
+
+            this.phoneLbl.addMouseListener(new MouseListener() {
+                @Override
+                public void mouseClicked(MouseEvent mouseEvent) {
+                    JOptionPane.showMessageDialog(HeaderPanel.this, "Functionality not implemented.", "Alert", JOptionPane.WARNING_MESSAGE);
 
                 }
 
@@ -365,7 +419,6 @@ public class RoomPanel extends JPanel {
         JLabel addFileLbl;
         JLabel recordLbl;
         JTextField messageTF;
-        Map<String, ImageIcon> iconMap = getIconMap();
 
 
         public FooterPanel(Integer clientId) {
@@ -382,8 +435,8 @@ public class RoomPanel extends JPanel {
             this.messageTF = new JTextField();
 
 
-            this.addFileLbl.setIcon(iconMap.get("AddFile"));
-            this.recordLbl.setIcon(iconMap.get("Record"));
+            this.addFileLbl.setIcon(getAddFileIcon());
+            this.recordLbl.setIcon(getRecordIcon());
 
             //Add usernameLbl to westPanel
             this.centerPanel.add(messageTF, BorderLayout.CENTER);
@@ -397,32 +450,91 @@ public class RoomPanel extends JPanel {
             this.add(eastPanel, BorderLayout.EAST);
 
             //Add listener to message field
-            addListeners();
+            addComponentListeners();
         }
 
 
-        private Map<String, ImageIcon> getIconMap() {
-            Map<String, ImageIcon> map = new HashMap<>();
-            map.put("AddFile", new ImageIcon(RealtimePanel.class.getClassLoader().getResource("icons8-add-file-20.png")));
-            map.put("Record", new ImageIcon(RealtimePanel.class.getClassLoader().getResource("icons8-add-record-20.png")));
-            return map;
+        private ImageIcon getAddFileIcon() {
+            return new ImageIcon(RealtimePanel.class.getClassLoader().getResource("icons8-add-file-20.png"));
         }
 
-        private void addListeners() {
+        private ImageIcon getRecordIcon() {
+            return new ImageIcon(RealtimePanel.class.getClassLoader().getResource("icons8-add-record-20.png"));
+        }
+
+
+        private void addComponentListeners() {
+
             this.messageTF.addKeyListener(new KeyAdapter() {
                 @Override
                 public void keyReleased(KeyEvent e) {
                     if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                        String message = messageTF.getText();
-                        messageTF.setText("");
-                        sendMessage(message);
+                        sendMessage();
                     }
+                }
+            });
+
+
+            this.addFileLbl.addMouseListener(new MouseListener() {
+                @Override
+                public void mouseClicked(MouseEvent mouseEvent) {
+                    sendFile();
+                }
+
+                @Override
+                public void mousePressed(MouseEvent mouseEvent) {
+
+                }
+
+                @Override
+                public void mouseReleased(MouseEvent mouseEvent) {
+
+                }
+
+                @Override
+                public void mouseEntered(MouseEvent mouseEvent) {
+
+                }
+
+                @Override
+                public void mouseExited(MouseEvent mouseEvent) {
+
+                }
+            });
+
+            this.recordLbl.addMouseListener(new MouseListener() {
+                @Override
+                public void mouseClicked(MouseEvent mouseEvent) {
+                    JOptionPane.showMessageDialog(FooterPanel.this, "Functionality not implemented.", "Alert", JOptionPane.WARNING_MESSAGE);
+                }
+
+                @Override
+                public void mousePressed(MouseEvent mouseEvent) {
+
+                }
+
+                @Override
+                public void mouseReleased(MouseEvent mouseEvent) {
+
+                }
+
+                @Override
+                public void mouseEntered(MouseEvent mouseEvent) {
+
+                }
+
+                @Override
+                public void mouseExited(MouseEvent mouseEvent) {
+
                 }
             });
         }
 
+
         //todo: bugfix sometimes messages are not sent after pressing sent
-        private void sendMessage(String message) {
+        private void sendMessage() {
+            String message = messageTF.getText();
+            messageTF.setText("");
             Room room = RoomRepository.findRoomByClientIds(ownerId, clientId);
             if (room != null) {
                 TextContent textContent = new TextContent(ownerId, LocalDate.now(), message);
@@ -432,6 +544,53 @@ public class RoomPanel extends JPanel {
             } else {
                 JOptionPane.showMessageDialog(this, "Room not synced yet.", "Alert", JOptionPane.WARNING_MESSAGE);
             }
+        }
+
+        private FileContent loadFile() {
+            FileContent fileContent = null;
+            try {
+                JFileChooser jFileChooser = new JFileChooser();
+                FileNameExtensionFilter filter = new FileNameExtensionFilter(
+                        "png,jpg,jpeg,gif,txt,pdf files", "png", "jpg", "jpeg", "gif", "txt", "pdf");
+                jFileChooser.setFileFilter(filter);
+                int returnVal = jFileChooser.showOpenDialog(this);
+                if (returnVal == JFileChooser.APPROVE_OPTION) {
+                    File file = jFileChooser.getSelectedFile();
+                    if (file.exists() && file.isFile()) {
+                        String fileName = file.getName();
+                        LogUtil.info("Chosen file : " + fileName);
+
+                        byte[] array = new byte[(int) file.length()];
+
+                        //open fis and write file content to array
+                        FileInputStream fis = new FileInputStream(file);
+                        fis.read(array);
+                        fis.close();
+
+                        fileContent = new FileContent(ownerId, LocalDate.now(), fileName, array);
+
+                    } else {
+                        LogUtil.info("Chosen file not exits or no file at all.");
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return fileContent;
+        }
+
+        private void sendFile() {
+            Room room = RoomRepository.findRoomByClientIds(ownerId, clientId);
+            if (room != null) {
+                FileContent fileContent = loadFile();
+                room.addRoomContentByLocal(fileContent);
+
+                RoomPacket uRoomPacket = new RoomPacket(new Header(ownerId, -1), new Body(null, new RoomContentWrapper(fileContent)), room.getId(), RoomOp.ROOM_UPDATE);
+                PacketQueue.writeOut(uRoomPacket);
+            } else {
+                JOptionPane.showMessageDialog(this, "Room not synced yet.", "Alert", JOptionPane.WARNING_MESSAGE);
+            }
+
         }
 
         public void revalidateGui() {

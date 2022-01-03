@@ -3,7 +3,7 @@ package org.teilen.common.domain;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.teilen.common.packet.base.content_wrapper.ClientInfoWrapper;
+import org.teilen.common.packet.base.wrapper.ClientInfoWrapper;
 
 import java.io.Serializable;
 
