@@ -14,26 +14,21 @@ Desktop communication application with sockets.It also has messaging, file trans
 
 ![](img/client_1.png)
 
-<br>--------------------------------------------------------------------------------------------------------------------
-
 ![](img/client_2.png)
 
 <br>
 
 # Server :
-
 ![](img/server_1.png)
 
 <br>
 
 # Client-server :
-
 ![](img/client_server_1.png)
 
 <br>
 
 # Multiple clients :
-
 ![](img/multiple_clients_1.png)
 
 
